@@ -1,11 +1,10 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 
-// alpha release intro for internal developer only
 
 /*
  * SINGLEID WEB PLUGIN
- * Date: 2015-01 from SingleID Inc.
+ * Date: 2015-02 from SingleID Inc.
  * 
  * To use the plugin on your site please upload this file to your web root directory.
  * You must have jQuery on your site. You can install jquery by adding these line to your head:
@@ -32,36 +31,59 @@ header("Access-Control-Allow-Origin: *");
  
  
 define("LOGO_URL", "http://www.singleid.com/img/logonew.png");
-define("SITE_NAME", "Full data test");
+define("SITE_NAME", "Basic test");
 define("requested_data", "1,2,3,4");
-define("billing_key", "internaltest"); 				// you must require this key from www.singleid.com
+define("billing_key", ""); 	// You have to request this key from www.singleid.com if requested_data is different from "1"
 define("admin_contact", "xxxxxx@singleid.com");
 
 
+function is_SingleID($val){
+
+if (strlen($val) == '8'){  
+	return (bool)preg_match("/[0-9a-f]{8}/i", $val);
+}else if (strlen($val) == '7'){  	// crockford mode base 32
+	return (bool)preg_match("/[0-9a-z]{7}/i", $val);
+}else{
+	return false;
+}
+
+}
+
+
+
+// first check !
+
+if(!is_writable('userdata/')){
+	print '<p>no write permission!</p>';
+	error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 userdata/ -R ');
+}
+
+
+// create some fake file in userdata 
+
+
+	session_start();
+
+
+
+
+		if(isset($_POST['UTID'])) {
+			$op = 'response'; // When some device is sending data !
+		} else {
+			$op = $_REQUEST['op'];
+		}
 
 
 
 
 
-session_start();
+if($op == 'init'){ // Where all begin ( from browser user )
 
-$op = $_REQUEST['op'];
-
-if(isset($_POST['UTID']))
-	$op = 'response';
-
-if($op == 'init')
-{
-	if(!is_writable('userdata/'))
-	{
-		print '<p>no write permission!</p>';
-		error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 userdata/ -R ');
-	}
-	else
-	{
-		$_SESSION['singleID']['hash'] = md5( microtime().mt_rand(1, mt_getrandmax()).$_SERVER['REMOTE_ADDR'].mt_rand(1, mt_getrandmax()) );
-		$_SESSION['singleID'][$_SESSION['singleID']['hash']]['has_response'] = 0;
-		$_SESSION['singleID'][$_SESSION['singleID']['hash']]['is_sended'] = 0;
+		$_SESSION['SingleID']['hash'] = md5( microtime().md5($_SERVER['HTTP_USER_AGENT'].mt_rand(1, mt_getrandmax())).$_SERVER['REMOTE_ADDR'].$_SERVER['SCRIPT_FILENAME'].mt_rand(1, mt_getrandmax()) );
+		
+		
+		$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['has_response'] = 0;
+		$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] = 0;
 
 		?>
 		<!DOCTYPE html>
@@ -70,12 +92,12 @@ if($op == 'init')
 				<title>SingleID iframed button</title>
 				<meta charset="utf-8">
 				<link rel="stylesheet" href="https://app.singleid.com/button/plugin/css/main_sheet.css">
-				<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
-				<script src="https://app.singleid.com/button/plugin.js"></script>
+				<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>				
+				<script src="js/plugin.js"></script>
 			</head>
 			<body>
 		   		<div class="singleid_button_wrap singleid_pointer">
-	        	    <div class="single_text_single_id">fill out</div>
+	        	    <div class="single_text_single_id">SingleID</div>
 	                <div class="icon_box_single_id"><img src="https://app.singleid.com/button/plugin/img/key2.jpg" alt="" /></div>
 
 	            	<div class="white_back_single_id singleid_invisible">
@@ -83,7 +105,7 @@ if($op == 'init')
 	                	<button type="button" class="icon_box_go" onClick="sid_sendData();">go</button>
 	            	</div>
 	                <div class="singleid_waiting singleid_invisible">waiting for data</div>
-				    <a href="https://play.google.com/store/apps/details?id=com.singleid.wapp" title="SingleID app for Android"><div class="free_text_single_id">Get SingleID now!</div>
+				    <a href="https://www.singleid.com" title="SingleID is available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
 					</a>
 			    </div>
 			   </body>
@@ -114,172 +136,207 @@ if($op == 'init')
 		        </script>
 		</html>
 		<?php
-	}
+	
 	die();
-}
-elseif($op == 'send')
-{
-error_log('send');
-	$single_id = $_POST['single_id'];
-	if($single_id)
-	{
-		//error_log('send 1');
-		$ssl = (!empty($s['HTTPS']) && $s['HTTPS'] == 'on') ? 1:0;
-		$protocol[1] = 'https';
-		$protocol[0] = 'http';
+	
+	
+}elseif($op == 'send'){ 	// From browser 
+							// here start the request to forward 
 
-		//set POST variables
-		$url = 'https://app.singleid.com/';
-
-		$fields = array(
-			'SingleID' 			=> urlencode($single_id), // the value typed in the button ( 8 hex char string )
-			'UTID' 				=> urlencode($_SESSION['singleID']['hash']), // MUST BE AN MD5 HASH or a 32 hex char string
-			'logo_url' 			=> LOGO_URL, // the img that will be displayed on the user device
-			'name' 				=> SITE_NAME, // website name
-			'requested_data' 	=> requested_data, // see note 1 below
-			'ssl' 				=> $ssl,
-			'url_waiting_data'	=> $protocol[$ssl].'://'. $_SERVER['HTTP_HOST'].$_SERVER["REQUEST_URI"],
-			'ACTION_ID' 		=> "askfordata"
-		);
-
-		//url-ify the data for the POST
-		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
-		rtrim($fields_string, '&');
+	if (is_SingleID($_POST['single_id'])) {
 		
-//error_log('fields='.$fields_string.'|||'.$ch);
+		$single_id = $_POST['single_id'];
+		$_SESSION['SingleID']['who'] = $single_id;
 
-		//open connection
-		$ch = curl_init();
+		if ($single_id) { // redundant
+			
+			$ssl = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 1:0;
+			$protocol[1] = 'https';
+			$protocol[0] = 'http';
+			
+				// fix 2015-01-27
+				if ($ssl == 0 and requested_data <> '1'){
+					error_log('send 2 '.$ssl); // in questo caso devo bloccare il pulsante !!!! [TODO]
+				}
+			
+			//set POST variables
+			$url = 'https://app.singleid.com/';
 
-		//set the url, number of POST vars, POST data
-		curl_setopt($ch,CURLOPT_URL, $url);
-		curl_setopt($ch,CURLOPT_POST, count($fields));
-		curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
-		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$fields = array(
+				'SingleID' 			=> urlencode($single_id), // the value typed in the button ( 8 hex char string )
+				'UTID' 				=> urlencode($_SESSION['SingleID']['hash']), // MUST BE AN MD5 HASH or a 32 hex char string
+				'logo_url' 			=> LOGO_URL, // the img that will be displayed on the user device
+				'name' 				=> SITE_NAME, // website name
+				'requested_data' 	=> requested_data, // see note 1 below
+				'ssl' 				=> $ssl,
+				'url_waiting_data'	=> $protocol[$ssl].'://'. $_SERVER['HTTP_HOST'].$_SERVER["REQUEST_URI"],
+				'ACTION_ID' 		=> "askfordata"
+			);
+
+				//url-ify the data for the POST
+				foreach($fields as $key=>$value) {
+					$fields_string .= $key.'='.$value.'&'; // TODO TO CHECK 
+				}
+				rtrim($fields_string, '&');
+			
+
+			//open connection
+			$ch = curl_init();
+
+			//set the url, number of POST vars, POST data
+			curl_setopt($ch,CURLOPT_URL, $url);
+			curl_setopt($ch,CURLOPT_POST, count($fields));
+			curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			
+			//execute post
+			$result = curl_exec($ch);
+			error_log(curl_error($ch));
+			$responseInfo = curl_getinfo($ch);
+
+			$ServerReply = json_decode($result, true);
+			
+
+
+			//close connection
+			curl_close($ch);
+
+			$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] = time();
+		}
 		
-		//execute post
-		$result = curl_exec($ch);
-		//error_log(curl_error($ch));
-		$reponseInfo = curl_getinfo($ch);
-//error_log('result='.$result.'|||'.$ch);
-//error_log('reponseInfo='.serialize($reponseInfo));
+			if ($ServerReply['Reply'] <> 'ok'){
+			error_log($ServerReply['PopupTitle'].' '. $ServerReply['Popup']);
+			die($ServerReply['PopupTitle']);
+			}
 
-
-/*
-if (empty($result)) {
-    // some kind of an error happened
-    die(curl_error($ch));
-    curl_close($ch); // close cURL handler
-} else {
-    $info = curl_getinfo($ch);
-    curl_close($ch); // close cURL handler
-
-    if (empty($info['http_code'])) {
-            die("No HTTP code was returned");
-    } else {
-        // load the HTTP codes
-        $http_codes = parse_ini_file("path/to/the/ini/file/I/pasted/above");
-       
-        // echo results
-        echo "The server responded: <br />";
-        echo $info['http_code'] . " " . $http_codes[$info['http_code']];
-    }
-
-}
-*/
-
-
-		//close connection
-		curl_close($ch);
-
-		$_SESSION['singleID'][$_SESSION['singleID']['hash']]['is_sended'] = time();
+		die('500'); // if numeric is ok
+	}else{
+		die('not valid singleid'); // TODO TO CHECK 
 	}
-	die();
-}
-elseif($op == 'response')
-{
-	error_log('response!!!');
+	
+	
+} elseif($op == 'response') {
+	// This happen when a Device has sent something ( $_POST[UTID]) 
+	
+	
+		// TODO we need also to remove from this folder all the files older than 5 minutes for security reason !!!
+		$path = 'userdata/';
+		  if ($handle = opendir($path)) {
+			 while (false !== ($file = readdir($handle))) {
+				if ((time()-filectime($path.$file)) >= 300) {  
+				   if (preg_match('/\.SingleID.txt$/i', $file)) {
+					  unlink($path.$file);
+				   }
+				}
+			 }
+		   }
+	   
+	   
+	   
 
-	if($_POST['Ecom_payment_mode'] != 'paypal')
-	{
+	if ($_POST['Ecom_payment_mode'] != 'paypal')	{
 		$_POST['Ecom_payment_mode'] = $_POST['Ecom_payment_card_type'];
 	}
-
-	$data = serialize($_POST);	
-	$fp = fopen('userdata/'.$_POST['UTID'], 'w');
+	
+	
+	// so we need the write the received data
+	$data = gzcompress(serialize($_POST), 9);	 // we compress only to avoid some research with grep from script kiddies:-/
+	$fp = fopen('userdata/'.$_POST['UTID'].'.SingleID.txt', 'w');
 	fwrite($fp, $data);
 	fclose($fp);
-	//chmod('userdata/'.$_POST['UTID'], 777); // #DV ? WTF ? why 777 ?
 	
-	/* if($_POST['status'] == 1)
-	{
-		if($_POST['data']['Ecom_payment_mode'] != 'paypal')
-			$_POST['data']['Ecom_payment_mode'] = $_POST['data']['Ecom_payment_card_type'];
+	
 
-		$data = serialize($_POST['data']);
+	
+	
+	
+} elseif($op == 'getdata') {
+	error_log('getdata========');
+	$filetarget = 'userdata/'.$_SESSION['SingleID']['hash'].'.SingleID.txt';
+	$data = unserialize(gzuncompress(file_get_contents($filetarget)));
+	$data['ALREADY_REGISTERED'] = 1; // to understand security of this...
 
-		$fp = fopen('userdata/'.$_POST['UTID'], "w");
-		fwrite($fp, $data);
-		fclose($fp);
-	}
-	else
-	{
-		$fp = fopen('userdata/'.$_POST['UTID'], "w");
-		fwrite($fp, '9');
-		fclose($fp);
-	} */
-}
-elseif($op == 'getdata')
-{
-	// error_log('getdata');
-	$filetarget = 'userdata/'.$_SESSION['singleID']['hash'];
-	$data = unserialize(file_get_contents($filetarget));
+				// TODO TOCHECK 
+				// THIS IS THE MOST DELICATE POINT !
 
-	print json_encode($data);
+	
+	// but if I am already a registered user ?
+	
+	// TODO CHECK SINGLEID !
+	
+	
+	
+	 // CODE FOR WEBSITE OWNER  START =======
+	
+	 
+
+			// the SingleID is already present in the profile ?
+			
+				// if yes we need to merge this profile but how ???
+				
+				
+			// if the email is not present we need to register the user
+	
+				// IN DEVELOPMENT
+	
+	
+	
+		// so i need to update the allowed value and then mark it as logged in
+	
+	// CODE FOR WEBSITE OWNER END =====
+	
+	
+	
+		// if i print the data received the js/plugin.js will fill a form.
+	
+	print json_encode($data); // qua redirect to
+
+	
 	
 	
 	// See if it exists before attempting deletion on it
 	if (file_exists($filetarget)) {
     unlink($filetarget); // Delete now
+    unset($_SESSION['SingleID']); // we love to clean the system after use 
+
 	} 
 	// See if it exists again to be sure it was removed
 	if (file_exists($filetarget)) {
-		error_log('Problem deleting. Check your permission ! ' . $filetarget);
+		error_log('Problem deleting sensitive SingleID files. Check your permission ! ' . $filetarget);
 	}
 	die;
-}
-elseif($op == 'refresh')
-{
-	error_log('refresh');
+	
+	
+	
+} elseif($op == 'refresh') {
+	
+	// request made from browser !
+	
+		$file = 'userdata/'.$_SESSION['SingleID']['hash'].'.SingleID.txt';
+		//$file300 = 'userdata/'.$_SESSION['SingleID']['hash'].'.300.SingleID.txt';
+		//$dif = time() - $_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'];
 
-	/* $_SESSION['singleID']['hash'] = '18a7f2cacbe7393a2bcfc012792fd76a';
-	$_SESSION['singleID'][$_SESSION['singleID']['hash']]['is_sended'] = time()-5; */
-	if($_SESSION['singleID'][$_SESSION['singleID']['hash']]['is_sended'] > 0)
-	{
-		$file = 'userdata/'.$_SESSION['singleID']['hash'];
-		$dif = time() - $_SESSION['singleID'][$_SESSION['singleID']['hash']]['is_sended'];
-
-		if($dif > 60)
-		{
-			print 10;
-		}
-		else if( is_file($file) )
-		{
-			$d = (int)file_get_contents($file);
-			if($d == 9)
-			{
-				print '9';
-			}
-			else
-			{
-				print '2';
-			}
+		if($dif > 60){
+			error_log('400-0000'); // TODO 
+			print 400; // too much time is passed
+			
+		}else if( is_file($file) ){ // the file exist !
+			 
+				error_log('200-0000');
+				print '200'; // the post data has been received from the device so we launch the JS to populate the fields
+			//}
 		}
 		else
 		{
+			error_log('waiting for-1-0000');
 			print '1';
 		}
-	}
 	die;
 }
+
+
+
+
+  
+  
 ?>
