@@ -171,15 +171,27 @@ if ($op == 'init') { // Where all begin ( from browser user )
 				}
 				rtrim($fields_string, '&');
 			
+		$ip = $_SERVER['REMOTE_ADDR'];
 
+
+
+			$ip = filter_var($ip, FILTER_VALIDATE_IP);
+			$ip = ($ip === false) ? '0.0.0.0' : $ip;
+
+
+			$headers = array(
+            		'Authorization: key=' . billing_key,
+            		'Browser_ip: '. $ip
+			);
 			//open connection
 			$ch = curl_init();
 
 			//set the url, number of POST vars, POST data
 			curl_setopt($ch,CURLOPT_URL, $url);
 			curl_setopt($ch,CURLOPT_POST, count($fields));
+			curl_setopt($ch,CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
 			
 			//execute post
 			$result = curl_exec($ch);
