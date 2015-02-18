@@ -452,15 +452,15 @@ echo '<p>Ops: This script must be embedded into a page to work correctly</p>';
 
 
 function is_SingleID($val) {
-	if (strlen($val) == '8') {  
-		return (bool)preg_match("/[0-9a-f]{8}/i", $val);
+	if (strlen($val) == '8') {  // remove this
+		return (bool)preg_match("/[0-9a-f]{8}$/i", $val);
 		} else {
 		return false;
 	}
 }
 
 function is_md5($val) {
-	return (bool)preg_match("/[0-9a-f]{32}/i", $val);
+	return (bool)preg_match("/[0-9a-f]{32}$/i", $val);
 }
   
   
