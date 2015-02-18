@@ -389,7 +389,7 @@ if ($op == 'init') { // Where all begin ( from browser user )
 
 		require_once('SingleID_auth.php');
 	
-	
+	}
 		// if i print the data received the js/plugin.js will fill a form.
 	
 	print json_encode($data); // qua redirect to
