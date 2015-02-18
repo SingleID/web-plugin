@@ -58,7 +58,7 @@ if (!is_writable('userdata/')) {
 
 
 if ($op == 'init') { // Where all begin ( from browser user )
-		error_log('button is displayed');
+		//error_log('button is displayed');
 		
 
 		?>
@@ -73,15 +73,15 @@ if ($op == 'init') { // Where all begin ( from browser user )
 			</head>
 			<body>
 		   		<div class="singleid_button_wrap singleid_pointer">
-	        	    <div class="single_text_single_id">login with your SingleID</div>
-	                <div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling with SingleID" /></div>
+	        	    <div class="single_text_single_id">Login with your SingleID</div>
+	                <div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling, no more password" /></div>
 
 	            	<div class="white_back_single_id singleid_invisible">
 	                	<input class="singleid_styled_input" name="SingleID" type="text" value="" maxlength="8" />
 	                	<button type="button" class="icon_box_go" onClick="sid_sendData();">go</button>
 	            	</div>
 	                <div class="singleid_waiting singleid_invisible">waiting for data</div>
-				    <a href="https://www.singleid.com" target="_top" title="SingleID is available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
+				    <a href="http://www.singleid.com" target="_top" title="SingleID is available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
 					</a>
 			    </div>
 			   </body>
@@ -125,7 +125,7 @@ if ($op == 'init') { // Where all begin ( from browser user )
 	fclose($fp);
 							
 							
-	error_log('user has clicked go');
+	//error_log('user has clicked go');
 	
 	$_SESSION['SingleID']['hash'] = md5( microtime().md5($_SERVER['HTTP_USER_AGENT'].mt_rand(1, mt_getrandmax())).$_SERVER['REMOTE_ADDR'].$_SERVER['SCRIPT_FILENAME'].mt_rand(1, mt_getrandmax()) );
 	$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['has_response'] = 0;
@@ -162,7 +162,7 @@ if ($op == 'init') { // Where all begin ( from browser user )
 				'requested_data' 	=> requested_data, // see note 1 below
 				'ssl' 				=> $ssl,
 				'url_waiting_data'	=> $protocol[$ssl].'://'. $_SERVER['HTTP_HOST'].$_SERVER["REQUEST_URI"],
-				'ACTION_ID' 		=> "askfordata"
+				'ACTION_ID' 		=> 'askfordata'
 			);
 
 				//url-ify the data for the POST
@@ -171,17 +171,16 @@ if ($op == 'init') { // Where all begin ( from browser user )
 				}
 				rtrim($fields_string, '&');
 			
-		$ip = $_SERVER['REMOTE_ADDR'];
+			
 
-
-
-			$ip = filter_var($ip, FILTER_VALIDATE_IP);
-			$ip = ($ip === false) ? '0.0.0.0' : $ip;
+				$ip = $_SERVER['REMOTE_ADDR'];
+				$ip = filter_var($ip, FILTER_VALIDATE_IP);
+				$ip = ($ip === false) ? '0.0.0.0' : $ip;
 
 
 			$headers = array(
-            		'Authorization: key=' . billing_key,
-            		'Browser_ip: '. $ip
+            'Authorization: ' . billing_key,
+            'Browser_ip: '. $ip
 			);
 			//open connection
 			$ch = curl_init();
@@ -264,7 +263,7 @@ if ($op == 'init') { // Where all begin ( from browser user )
 	   
 	   
 	   
-	error_log('DEVICE_RESP'.serialize($_POST));
+	//error_log('DEVICE_RESP'.serialize($_POST));
 
 	if ($_POST['Ecom_payment_mode'] != 'paypal')	{
 		$_POST['Ecom_payment_mode'] = $_POST['Ecom_payment_card_type'];
@@ -286,26 +285,20 @@ if ($op == 'init') { // Where all begin ( from browser user )
 	
 	if (!is_md5($_SESSION['SingleID']['hash'])){
 		die('Wrong data to recover');
-		unset($_SESSION['SingleID']); // leave the system clean for better security
+		unset($_SESSION['SingleID']); // leave the system clean
 	}
 	
-	error_log('getdata========'.$_SESSION['SingleID']['hash']);
+	//error_log('getdata========'.$_SESSION['SingleID']['hash']);
 	$filetarget = 'userdata/'.$_SESSION['SingleID']['hash'].'.SingleID.txt';
 	$data = unserialize(gzuncompress(file_get_contents($filetarget)));
-	$data['ALREADY_REGISTERED'] = 1; // to understand security of this...
+	$data['Refresh_Page'] = 1;
 	
 									 // if this value is set to 1
-									 // The javascript know that is not a form filling example but the data has been processed from PHP
+									 // The javascript knows that is not a form filling example but the data has been processed from PHP
 	// start from here we need
+	error_log($data['which_set']);
 	
 	// but if I am already a registered user ?
-	
-	// TODO CHECK SINGLEID !
-	
-	
-	
-	 // CODE FOR WEBSITE OWNER  START =======
-
 	
 	/* data received with a personal profile 
 			"Pers_title",
@@ -330,40 +323,71 @@ if ($op == 'init') { // Where all begin ( from browser user )
 			"Pers_contact_preferred_mode",
 			"Pers_newsletter_agree"
       */
-      
-      
-                            
-	// Possibilities
 	
-	// User not present in DB with SingleID and not present with the same Email !
-		
-		// we try to auto register if the profile contains a minimum of data
-		
 	
-	// User not present in DB with SingleID BUT with email already present
 	
-		// The system should send a confirmation link to the email already present to enable the association from the user !
 		
-		
-	// User present in DB with SingleID but account disabled
-		
-		// display error
+	// before anything we need to check if the profile contains a minimum of data !
+	if ($data['which_set'] == 'personal'){ // ho ricevuto un set di dati di tipo personale
+		// the minimum required data are:
+ 
+		if (
+			(trim($data['Pers_first_name']) == '') or
+			(trim($data['Pers_last_name']) == '') or
+			(trim($data['Pers_postal_street_line_1']) == '') or
+			(trim($data['Pers_postal_city']) == '') or
+			(trim($data['Pers_postal_postalcode']) == '') or
+			(trim($data['Pers_postal_countrycode']) == '') or
+			(trim($data['Pers_first_email']) == '')){
 	
-	// User present in DB with SingleID 
-	
-		// which profile we accept ? (personal/companies) ?
-		
-		// We need to launch an update query of the user data ( if met the minimum profile data request )
+			// in order to use this site with SingleID you need to fill the minimum data required in your profile !
+			$data['Refresh_Page'] = 0; // remove refresh
+			$data['Bypass_Auth'] = 1; // do not exec code for auth
+			$data['Mex'] = 'Your SingleID Profile doesn\'t have all the minimum required fields';
+			$data['Show_Error'] = 1; // shows a javascript error
+			// we need to display a mex to the user !
 			
-			// warning we had not to replace the data that we do not the user could replace ! ( name / surname )
+		}
+	}
+	
+	
+	if ($data['which_set'] == 'business'){ // ho ricevuto un set di dati di tipo Business
+		// the minimum required data are:
+		// we accept only personal profile
+		
+			$data['Refresh_Page'] = 0; // remove refresh
+			$data['Bypass_Auth'] = 1; // do not exec code for auth
+			$data['Mex'] = 'Sorry. At the moment we accept only personal profile from SingleID';
+			$data['Show_Error'] = 1; // shows a javascript error
 			
-			// Warning... if the user now has just logged with a personal profile and then with a company profile ?
+		/*	
+		if (
+			(trim($data['Company_name']) == '') or
+			(trim($data['Comp_postal_street_line_1']) == '') or
+			(trim($data['Comp_postal_city']) == '') or
+			(trim($data['Comp_postal_postalcode']) == '') or
+			(trim($data['Comp_postal_countrycode']) == '') or
+			(trim($data['Comp_contact_language']) == '') or
+			(trim($data['Comp_billing_vat_id']) == '')){
+	
+			// in order to use this site with SingleID you need to fill the minimum data required in your profile !
+			$data['Refresh_Page'] = 0; // remove refresh
+			$data['Bypass_Auth'] = 1; // do not exec code for auth
+			$data['Mex'] = 'Your SingleID Profile doesn\'t have all the minimum required fields';
+			$data['Show_Error'] = 1; // shows a javascript error
+			// we need to display a mex to the user !
+			
+		}
+		*/
+	}
 	
 	
+	
+	
+	
+	if ($data['Bypass_Auth'] <>  1){ // do not exec code for auth
 
-
-	// CODE FOR WEBSITE OWNER END =====
-	
+		require_once('SingleID_auth.php');
 	
 	
 		// if i print the data received the js/plugin.js will fill a form.
@@ -391,47 +415,46 @@ if ($op == 'init') { // Where all begin ( from browser user )
 	
 	// request made from browser !
 	
-	error_log('refresh');
-
+	//error_log('refresh');
+	$_SESSION['SingleID']['counter']++;
 	
 	//if($_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] > 0)
 	//{
 		$file = 'userdata/'.$_SESSION['SingleID']['hash'].'.SingleID.txt';
-		//$file300 = 'userdata/'.$_SESSION['SingleID']['hash'].'.300.SingleID.txt';
-		//$dif = time() - $_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'];
 
-		if($dif > 60){
-			error_log('400-0000');
+		if($_SESSION['SingleID']['counter'] > 120){
+			//error_log('400-0000');
 			print 400; // too much time is passed
-			
+						// the ouput number code is inspired from the http status code
+						// 400 = error
 		}else if( is_file($file) ){ // the file exist !
 
-				error_log('DEBUG: DATA RECEIVED FROM DEVICE');
+				// error_log('DEBUG: DATA RECEIVED FROM DEVICE');
 				print '200'; // the post data has been received from the device so we launch the JS to populate the fields
-		}
+		}				// 200 = OK
 		else
 		{
-			error_log('waiting for-1-0000');
-			print '1';
+			//error_log('waiting for-1-0000');
+			print '100';
+			
+						// continue... misuse as refresh
 		}
 	die;
 }
 
 
 // debug info
-echo '<p>This script must be embedded into a page to work correctly</p>';
+echo '<p>Ops: This script must be embedded into a page to work correctly</p>';
 
 
 
 
 
 
-function is_SingleID($val){
-	if (strlen($val) == '8'){  
+function is_SingleID($val) {
+	if (strlen($val) == '8') {  
 		return (bool)preg_match("/[0-9a-f]{8}/i", $val);
-		}else if (strlen($val) == '7'){  	// crockford mode base 32
-		return (bool)preg_match("/[0-9a-z]{7}/i", $val);
-		}else{
+		} else {
 		return false;
 	}
 }
