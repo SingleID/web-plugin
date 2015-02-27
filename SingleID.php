@@ -205,32 +205,6 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 												$ServerReply = json_decode($result, true);
 												
 												
-												// for debug purposes only
-												/*
-												if (empty($result)) {
-												// some kind of an error happened
-												die(curl_error($ch));
-												curl_close($ch); // close cURL handler
-												} else {
-												$info = curl_getinfo($ch);
-												curl_close($ch); // close cURL handler
-												
-												if (empty($info['http_code'])) {
-												die("No HTTP code was returned");
-												} else {
-												// load the HTTP codes
-												$http_codes = parse_ini_file("path/to/the/ini/file/I/pasted/above");
-												
-												// echo results
-												echo "The server responded: <br />";
-												echo $info['http_code'] . " " . $http_codes[$info['http_code']];
-												}
-												
-												}
-												*/
-												
-												
-												
 												curl_close($ch); //close connection because we are brave 
 												
 												$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] = time();
