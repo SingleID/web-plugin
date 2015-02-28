@@ -11,16 +11,21 @@ header("Access-Control-Allow-Origin: *");
 
 /*
  * SingleID WEB PLUGIN -> https://github.com/SingleID/web-plugin/
- * Date: 2015-02 from SingleID Inc.
+ * Date: 2015-03 from SingleID Inc.
  * 
  * To use the plugin on your site please upload this file to your web root directory.
  * You must have jQuery on your site. You can install jquery by adding these line to your head:
  * <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
  *
  * The next step is to insert the SingleId Button. Place this line of code to the place of your site where you want to place the button:
- * <iframe src="SingleID.php?op=init" width="270" height="80" frameborder="0"></iframe>
+ * 
+ * 
+ * git clone https://github.com/SingleID/web-plugin/
+ * 
+ * 
+ * <iframe src="web-plugin/SingleID.php?op=init" width="270" height="80" frameborder="0"></iframe>
  *
- * On line 40 and 43 you must use your site logo and site name.
+ * On 3 you must use your site logo and site name.
  * On line 45 you can change the data that you want to receive
  *  
  <option value="1">Personal data only</option>
@@ -35,17 +40,10 @@ header("Access-Control-Allow-Origin: *");
  *
  */
 
+require_once('SingleID.conf.php');
 
 
-define("LOGO_URL", "http://avatars0.githubusercontent.com/u/10206030?v=3&s=40");
-define("SITE_NAME", "GITHUB");
-define("requested_data", "1");
-define("billing_key", ""); 		// You have to request this key from www.singleid.com if requested_data is different from "1"
-define("admin_contact", ""); 	// You have to set this field only if requested_data is different from "1"
-
-
-
-// first of all
+// first check
 
 if (!is_writable('userdata/')) {
 				error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 userdata/ -R ');
@@ -122,16 +120,14 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				die();
 				
 				
-} elseif ($op == 'send') { // From browser 
-				// here start the request to forward 
+} elseif ($op == 'send') {	// From browser (user has clicked go)
+							// here start the request to forward a real time notification
 				
-				$securitydata = '<html><h1>Silence is gold</h1></html>'; // just to be extra sure that nobody could browse this folder that for some minutes is full of sensitive data
+				$securitydata = '<html><h1>Silence is gold</h1></html>'; // just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
 				$fp           = fopen('userdata/index.html', 'w');
 				fwrite($fp, $securitydata);
 				fclose($fp);
 				
-				
-				//error_log('user has clicked go');
 				
 				$_SESSION['SingleID']['hash']                                        = md5(microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax()));
 				$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['has_response'] = 0;
@@ -151,9 +147,10 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 												$protocol[1] = 'https';
 												$protocol[0] = 'http';
 												
-												// fix 2015-01-27
+												// ttofix 2015-01-27
 												if ($ssl == 0 and requested_data <> '1') {
-																error_log('send 2 ' . $ssl); // in questo caso devo bloccare il pulsante !!!! [TODO]
+																error_log('send 2 ' . $ssl);	// This will be correct very soon
+																								// we need to block here this request and we need an alert for the sysadmin
 												}
 												
 												//set POST variables
@@ -357,11 +354,12 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
 								
 								require_once('SingleID_auth.php');
+								// userAuth(); // to switch !
 								
 				}
-				// if i print the data received the js/plugin.js will fill a form.
+				// Printing the data (received) the js/plugin.js will fill the form.
 				
-				print json_encode($data); // qua redirect to
+				print json_encode($data); // redirect to
 				
 				
 				
@@ -394,7 +392,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				if ($_SESSION['SingleID']['counter'] > 120) {
 								//error_log('400-0000');
 								print 400; // too much time is passed
-								// the ouput number code is inspired from the http status code
+								// the output number code are inspired from the http status code
 								// 400 = error
 				} else if (is_file($file)) { // the file exist !
 								
@@ -421,11 +419,7 @@ echo '<p>Ops: This script must be embedded into a page to work correctly</p>';
 
 function is_SingleID($val)
 {
-				if (strlen($val) == '8') { // superfluo
-								return (bool) preg_match("/[0-9a-f]{8}$/i", $val);
-				} else {
-								return false;
-				}
+				return (bool) preg_match("/[0-9a-f]{8}$/i", $val);
 }
 
 function is_md5($val)

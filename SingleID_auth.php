@@ -6,16 +6,11 @@ At this time it is being published for internal use only. Please DO NOT RELY
 upon it until this notice has been removed. (Which should be soon!)
 */
 
-
-// CODE FOR WEBSITE OWNER  START =======
-
-// include your connection files
-
-// in order we need to check the following things
-
+// TODO to be included in .conf.php
 
 if (!is_SingleID($_SESSION['SingleID']['who'])) {
-    die('500'); // we prevent injection in this simple way 
+    die('500'); // we prevent injection in this simple way
+				// 500 is interpreted from the JS
 }
 
 
@@ -123,11 +118,6 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
     
     
 }
-
-
-
-
-// CODE FOR WEBSITE OWNER END =====
 
 
 ?>
