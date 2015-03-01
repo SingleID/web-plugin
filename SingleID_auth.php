@@ -8,6 +8,10 @@ upon it until this notice has been removed. (Which should be soon!)
 
 // TODO to be included in .conf.php
 
+
+// this file will be rewritten from scratch during 3-7 march 2015
+
+
 if (!is_SingleID($_SESSION['SingleID']['who'])) {
     die('500'); // we prevent injection in this simple way
 				// 500 is interpreted from the JS
@@ -43,7 +47,7 @@ $l   = mysqli_fetch_row($res);
 // We need to launch an update query of the user data ( if met the minimum profile data request )
 
 // Brainstorming on... if the user now has just logged with a personal profile and then with a company profile ?
-// what about prepared statement ?
+// what about PDO or filter var ?
 foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
     $datasafe[$key] = mysqli_real_escape_string($mysqli, $val);
 }
