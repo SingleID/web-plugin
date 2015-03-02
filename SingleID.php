@@ -33,6 +33,8 @@ header("Access-Control-Allow-Origin: *");
  <option value="1,-2,3">Personal, Billing and Shipping data ( Without credit card ) </option>
  <option value="1,2,3,4">Personal, Billing, Shipping and Identification data</option>
  <option value="1,-2,3,4">Personal, Billing ( Without credit card ), Shipping and Identification data</option>
+ <option value="5">All data with a random password as final handshake</option>
+ <option value="6">All data with the previous exchanged random password</option>
  *
  *
  * In the directory where you place plugin.php you must make a dir called "userdata" and make it writeable.
@@ -40,8 +42,7 @@ header("Access-Control-Allow-Origin: *");
  *
  */
 
-require_once('SingleID.conf.php');
-
+require_once('SingleID.conf.php'); // the only file that you can edit and that will be no replaced with git pull
 
 // first check
 
@@ -121,18 +122,19 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				
 				
 } elseif ($op == 'send') {	// From browser (user has clicked go)
-							// here start the request to forward a real time notification
+							// here start the request from the website to the SingleID Server
 				
-				$securitydata = '<html><h1>Silence is gold</h1></html>'; // just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
+				// this step is for extra security. If you really know what are you doing you can remove
+				// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
+				$securitydata = '<html><h1>Silence is gold</h1></html>'; 
 				$fp           = fopen('userdata/index.html', 'w');
 				fwrite($fp, $securitydata);
 				fclose($fp);
 				
 				
 				$_SESSION['SingleID']['hash']                                        = md5(microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax()));
-				$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['has_response'] = 0;
-				$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended']    = 0;
-				
+				// $_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['has_response'] = 0;
+				// $_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended']    = 0;
 				
 				
 				
@@ -168,14 +170,22 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 												);
 												
 												//url-ify the data for the POST
-												foreach ($fields as $key => $value) {
+												foreach ($fields as $key => $value) { // todo and if a var contain a & ? DOUBLE CHECK HERE ASAP
 																$fields_string .= $key . '=' . $value . '&'; // TODO TO CHECK 
 												}
 												rtrim($fields_string, '&');
 												
 												
 												
-												$ip = $_SERVER['REMOTE_ADDR'];	// we all know that an ip could be spoofed
+												// we all know that an ip could be spoofed
+												
+												if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
+													$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];  // behind amazon load balancing
+												} else {
+													$ip = $_SERVER['REMOTE_ADDR'];
+												}
+
+
 												$ip = filter_var($ip, FILTER_VALIDATE_IP);
 												$ip = ($ip === false) ? '0.0.0.0' : $ip;
 												
@@ -204,7 +214,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 												
 												curl_close($ch); //close connection because we are brave 
 												
-												$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] = time();
+												//$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] = time();
 								}
 								
 								if ($ServerReply['Reply'] <> 'ok') {
