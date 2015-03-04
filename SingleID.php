@@ -1,9 +1,10 @@
 <?php
 
 /*
-THIS PRELIMINARY PLUGIN IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
-At this time it is being published for internal use only. Please DO NOT RELY
-upon it until this notice has been removed. (Which should be soon!)
+* THIS CODE IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
+* It is provided for discussion only and may change at any moment. 
+* Don't cite this code other than as work in progress.
+* 
 */
 
 header("Access-Control-Allow-Origin: *");
@@ -11,22 +12,24 @@ header("Access-Control-Allow-Origin: *");
 
 /*
  * SingleID WEB PLUGIN -> https://github.com/SingleID/web-plugin/
- * Date: 2015-03 from SingleID Inc.
  * 
  * To use the plugin on your site please upload this file to your web root directory.
  * You must have jQuery on your site. You can install jquery by adding these line to your head:
  * <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
  *
- * The next step is to insert the SingleID Button. Place this line of code to the place of your site where you want to place the button:
  * 
  * 
  * git clone https://github.com/SingleID/web-plugin/
+ * cd web-plugin
+ * mkdir userdata
+ * chmod 0777 userdata -R
  * 
+ * The next step is to insert the SingleID Button. Place this line of code to the place of your site where you want to place the button:
  * 
  * <iframe src="web-plugin/SingleID.php?op=init" width="270" height="80" frameborder="0"></iframe>
  *
  * On 3 you must use your site logo and site name.
- * On line 45 you can change the data that you want to receive
+ * On line 4 and 5 you can change the data that you want to receive
  *  
  <option value="1">Personal data only</option>
  <option value="1,2,3">Personal, Billing and Shipping data</option>
@@ -37,7 +40,7 @@ header("Access-Control-Allow-Origin: *");
  <option value="6">All data with the previous exchanged random password</option>
  *
  *
- * In the directory where you place plugin.php you must make a dir called "userdata" and make it writeable.
+ * In the directory where you place SingleID.php you must make a dir called "userdata" and make it writeable.
  *
  *
  */
@@ -52,7 +55,6 @@ if (!is_writable('userdata/')) {
 }
 
 
-// create some fake file in userdata 
 
 
 session_start();
@@ -117,15 +119,18 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 				
 				
 } elseif ($_REQUEST['op'] == 'send') {	// From browser (user has clicked go)
-							// here start the request from the website to the SingleID Server
+										// here start the request from the website to the SingleID Server
 				
 				// this step is for extra security. If you really know what are you doing you can remove
 				// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
-				$securitydata = '<html><h1>Silence is gold</h1></html>'; 
-				$fp           = fopen('userdata/index.html', 'w');
-				fwrite($fp, $securitydata);
-				fclose($fp);
-				
+				if (!file_exists('userdata/index.html')) {
+				// prevent directory browsing creating a fake file
+
+								$securitydata = '<html><h1>Silence is gold</h1></html>'; 
+								$fp           = fopen('userdata/index.html', 'w');
+								fwrite($fp, $securitydata);
+								fclose($fp);
+				}				
 				
 				$_SESSION['SingleID']['hash'] = md5(microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
 				
@@ -136,93 +141,90 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								$single_id                   = $_POST['single_id'];
 								$_SESSION['SingleID']['who'] = $single_id;
 								
-								if ($single_id) { // redundant
 												
-												$ssl         = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 1 : 0;
-												$protocol[1] = 'https';
-												$protocol[0] = 'http';
-												
-												// ttofix 2015-01-27
+								$ssl         = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 1 : 0;
+								$protocol[1] = 'https';
+								$protocol[0] = 'http';
+								
 												if ($ssl == 0 and requested_data <> '1') {
 																error_log('send 2 ' . $ssl);	// This will be correct very soon
 																								// we need to block here this request and we need an alert for the sysadmin
+																if ($_SERVER['HTTP_HOST'] <> '192.168.178.137'){	// we can accept missing ssl if is an internal test							
+																die('Misconfiguration of plugin'); // TODO TO CHECK 
+																}
 												}
-												
-												//set POST variables
-												$url = 'https://app.singleid.com/';
-												
-												$fields = array(
-																'SingleID' => urlencode($single_id), // the value typed in the button ( 8 hex char string )
-																'UTID' => urlencode($_SESSION['SingleID']['hash']), // MUST BE AN MD5 HASH or a 32 hex char string
-																'logo_url' => LOGO_URL, // the img that will be displayed on the user device
-																'name' => SITE_NAME, // website name
-																'requested_data' => requested_data, // see note 1 below
-																'ssl' => $ssl,
-																'url_waiting_data' => $protocol[$ssl] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"],
-																'ACTION_ID' => 'askfordata'
-												);
-												
-												//url-ify the data for the POST
-												foreach ($fields as $key => $value) { // todo and if a var contain a & ? DOUBLE CHECK HERE ASAP
-																$fields_string .= $key . '=' . $value . '&'; // TODO TO CHECK 
-												}
-												rtrim($fields_string, '&');
-												
-												
-												
-												// we all know that an ip could be spoofed
-												
-												if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
-													$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];  // behind amazon load balancing
-												} else {
-													$ip = $_SERVER['REMOTE_ADDR'];
-												}
-
-
-												$ip = filter_var($ip, FILTER_VALIDATE_IP);
-												$ip = ($ip === false) ? '0.0.0.0' : $ip;
-												
-												
-												$headers = array(
-																'Authorization: ' . billing_key,
-																'Browser_ip: ' . $ip
-												);
-												//open connection
-												$ch      = curl_init();
-												
-												//set the url, number of POST vars, POST data
-												curl_setopt($ch, CURLOPT_URL, $url);
-												curl_setopt($ch, CURLOPT_POST, count($fields));
-												curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-												curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-												curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-												
-												//execute post
-												$result = curl_exec($ch);
-												error_log(curl_error($ch));
-												$responseInfo = curl_getinfo($ch);
-												
-												$ServerReply = json_decode($result, true);
-												
-												
-												curl_close($ch); //close connection because we are brave 
-												
-												//$_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended'] = time();
+								
+								//set POST variables
+								$url = 'https://app.singleid.com/';
+								
+								$fields = array(
+												'SingleID' => urlencode($single_id), // the value typed in the button ( 8 hex char string )
+												'UTID' => urlencode($_SESSION['SingleID']['hash']), // MUST BE AN MD5 HASH or a 32 hex char string
+												'logo_url' => LOGO_URL, // the img that will be displayed on the user device
+												'name' => SITE_NAME, // website name
+												'requested_data' => requested_data, // see note 1 below
+												'ssl' => $ssl,
+												'url_waiting_data' => $protocol[$ssl] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"],
+												'ACTION_ID' => 'askfordata'
+								);
+								
+								//url-ify the data for the POST
+								foreach ($fields as $key => $value) { // todo and if a var contain a & ? DOUBLE CHECK HERE ASAP
+												$fields_string .= $key . '=' . $value . '&'; // TODO TO CHECK 
 								}
+								rtrim($fields_string, '&');
+								
+								// we all know that an ip could be spoofed
+								
+								if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
+									$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];  // behind amazon load balancing
+								} else {
+									$ip = $_SERVER['REMOTE_ADDR'];
+								}
+
+
+								$ip = filter_var($ip, FILTER_VALIDATE_IP);
+								$ip = ($ip === false) ? '0.0.0.0' : $ip;
+								
+								
+								$headers = array(
+												'Authorization: ' . billing_key,
+												'Browser_ip: ' . $ip
+								);
+								//open connection
+								$ch      = curl_init();
+								
+								//set the url, number of POST vars, POST data
+								curl_setopt($ch, CURLOPT_URL, $url);
+								curl_setopt($ch, CURLOPT_POST, count($fields));
+								curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+								curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+								
+								//execute post
+								$result = curl_exec($ch);
+								error_log(curl_error($ch));
+								$responseInfo = curl_getinfo($ch);
+								
+								$ServerReply = json_decode($result, true);
+								
+								
+								curl_close($ch); //close connection because we are brave 
+												
 								
 								if ($ServerReply['Reply'] <> 'ok') {
-												error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
+												//error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
 												die($ServerReply['PopupTitle']);
 								}
 								
-								die('500'); // if numeric is ok
+								// die('500'); // if numeric is ok
 				} else {
 								die('not valid SingleID'); // TODO TO CHECK 
 				}
 				
 				
 } elseif (isset($_POST['UTID'])) {
-				// This happen when a Device has sent something ( $_POST[UTID]) 
+				// a Device has sent something
 				if (!is_md5($_POST['UTID'])) {
 								die('Wrong data received!');
 								unset($_SESSION['SingleID']); // leave the system clean for better security
@@ -394,7 +396,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 				
 				if ($_SESSION['SingleID']['counter'] > 120) {
 								//error_log('400-0000');
-								print 400; // too much time is passed
+								print '400'; // too much time is passed
 								// the output number code are inspired from the http status code
 								// 400 = error
 				} else if (is_file($file)) { // the file exist !
