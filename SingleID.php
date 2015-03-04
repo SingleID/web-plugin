@@ -132,14 +132,13 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								fclose($fp);
 				}				
 				
-				$_SESSION['SingleID']['hash'] = md5(microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
+				$_SESSION['SingleID']['hash'] = md5(mt_rand(1, mt_getrandmax()).  microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
 				
 				
 				
 				if (is_SingleID($_POST['single_id'])) {
 								
-								$single_id                   = $_POST['single_id'];
-								$_SESSION['SingleID']['who'] = $single_id;
+								$_SESSION['SingleID']['who'] = $_POST['single_id'];
 								
 												
 								$ssl         = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 1 : 0;
@@ -156,10 +155,10 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								
 								//set POST variables
 								$url = 'https://app.singleid.com/';
-								
+												// url encode ?
 								$fields = array(
-												'SingleID' => urlencode($single_id), // the value typed in the button ( 8 hex char string )
-												'UTID' => urlencode($_SESSION['SingleID']['hash']), // MUST BE AN MD5 HASH or a 32 hex char string
+												'SingleID' => $_POST['single_id'], // the value typed in the button ( 8 hex char string )
+												'UTID' => $_SESSION['SingleID']['hash'], // MUST BE AN MD5 HASH or a 32 hex char string
 												'logo_url' => LOGO_URL, // the img that will be displayed on the user device
 												'name' => SITE_NAME, // website name
 												'requested_data' => requested_data, // see note 1 below
@@ -195,6 +194,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								$ch      = curl_init();
 								
 								//set the url, number of POST vars, POST data
+								curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 								curl_setopt($ch, CURLOPT_URL, $url);
 								curl_setopt($ch, CURLOPT_POST, count($fields));
 								curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -203,7 +203,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								
 								//execute post
 								$result = curl_exec($ch);
-								error_log(curl_error($ch));
+								// error_log('sent '.$fields_string.curl_error($ch));
 								$responseInfo = curl_getinfo($ch);
 								
 								$ServerReply = json_decode($result, true);
@@ -213,13 +213,16 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 												
 								
 								if ($ServerReply['Reply'] <> 'ok') {
-												//error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
+												error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
 												die($ServerReply['PopupTitle']);
 								}
 								
-								// die('500'); // if numeric is ok
+								error_log(serialize($ServerReply));
+								$_SESSION['SingleID']['counter'] = 0;
+								die('100');
+								
 				} else {
-								die('not valid SingleID'); // TODO TO CHECK 
+								die('Invalid SingleID'); // TODO TO CHECK 
 				}
 				
 				
@@ -231,15 +234,31 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 				}
 				
 				// we need remove from this folder all the files older than 5 minutes for security reason !!!
+				
 				$path = 'userdata/';
 				if ($handle = opendir($path)) {
-								while (false !== ($file = readdir($handle))) {
-												if ((time() - filectime($path . $file)) >= 300) {
-																if (preg_match('/\.SingleID.txt$/i', $file)) {
-																				unlink($path . $file);
-																}
-												}
-								}
+					while (false !== ($file = readdir($handle))) {
+						if ((time() - filectime($path . $file)) >= 300) {
+							if (preg_match('/\.SingleID.txt$/i', $file)) {
+					
+								// for max privacy we can think about overwrite them before deleting...
+								// on linux only
+								//if (PHP_OS == 'Linux'){
+									error_log('secure overwrite');
+									$size = filesize($path . $file);
+
+									$src = fopen('/dev/urandom', 'rb');
+									$dest = fopen($path . $file, 'wb');
+
+									stream_copy_to_stream($src, $dest, $size);
+
+									fclose($src);
+									fclose($dest);
+								//}
+								unlink($path . $file);
+							}
+						}
+					}
 				}
 				
 				
@@ -403,14 +422,11 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								
 								// error_log('DEBUG: DATA RECEIVED FROM DEVICE');
 								print '200'; // the post data has been received from the device so we launch the JS to populate the fields
-				} // 200 = OK
-				else {
-								//error_log('waiting for-1-0000');
+				} else {
 								print '100';
-								
 								// continue... misuse as refresh
 				}
-				die;
+				die();
 }
 
 
