@@ -1,7 +1,7 @@
 var sid_div;
 var sid_domain = document.domain;
 var sid_url = location.origin + location.pathname;
-var sid_plugin_url = sid_url.replace("plugin.js?op=init", "plugin.php"); 
+var sid_plugin_url = sid_url.replace("plugin.js?op=init", "SingleID.php"); 
 console.log(sid_plugin_url);
 var has_answer = 0;
 var singleIDInterval;

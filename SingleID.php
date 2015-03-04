@@ -17,7 +17,7 @@ header("Access-Control-Allow-Origin: *");
  * You must have jQuery on your site. You can install jquery by adding these line to your head:
  * <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
  *
- * The next step is to insert the SingleId Button. Place this line of code to the place of your site where you want to place the button:
+ * The next step is to insert the SingleID Button. Place this line of code to the place of your site where you want to place the button:
  * 
  * 
  * git clone https://github.com/SingleID/web-plugin/
@@ -57,14 +57,9 @@ if (!is_writable('userdata/')) {
 
 session_start();
 
-if (isset($_POST['UTID'])) { // to change !
-				$op = 'response'; // When some device is sending data !
-} else {
-				$op = $_REQUEST['op'];
-}
 
 
-if ($op == 'init') { 	// Where all begin ( here we display the green button )
+if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green button )
 				
 				
 ?>
@@ -121,7 +116,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				die();
 				
 				
-} elseif ($op == 'send') {	// From browser (user has clicked go)
+} elseif ($_REQUEST['op'] == 'send') {	// From browser (user has clicked go)
 							// here start the request from the website to the SingleID Server
 				
 				// this step is for extra security. If you really know what are you doing you can remove
@@ -132,9 +127,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				fclose($fp);
 				
 				
-				$_SESSION['SingleID']['hash']                                        = md5(microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax()));
-				// $_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['has_response'] = 0;
-				// $_SESSION['SingleID'][$_SESSION['SingleID']['hash']]['is_sended']    = 0;
+				$_SESSION['SingleID']['hash'] = md5(microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . $_SERVER['SCRIPT_FILENAME'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
 				
 				
 				
@@ -228,7 +221,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				}
 				
 				
-} elseif ($op == 'response') {
+} elseif (isset($_POST['UTID'])) {
 				// This happen when a Device has sent something ( $_POST[UTID]) 
 				if (!is_md5($_POST['UTID'])) {
 								die('Wrong data received!');
@@ -264,7 +257,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				
 				
 				
-} elseif ($op == 'getdata') {
+} elseif ($_REQUEST['op'] == 'getdata') {
 				
 				if (!is_md5($_SESSION['SingleID']['hash'])) {
 								die('Wrong data to recover');
@@ -388,7 +381,7 @@ if ($op == 'init') { 	// Where all begin ( here we display the green button )
 				
 				
 				
-} elseif ($op == 'refresh') {
+} elseif ($_REQUEST['op'] == 'refresh') {
 				
 				// request made from browser !
 				
