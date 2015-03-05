@@ -39,9 +39,20 @@ function sid_sendData()
 {
 	var single_id = jQuery('input[name="SingleID"]').val();
 	
+		// we need to create a string with all the field with SingleIDAuth class fix 2015-03-05
+		var AuthArray = {};
+		
+		$(parent.window.jQuery('.SingleIDAuth')).each(function() {
+			AuthArray[$(this).attr('id')] = $(this).val();
+			console.log($(this).attr('id') + ' ' +  $(this).val());
+		});
+		var AuthString = JSON.stringify(AuthArray);
+		// console.log(AuthString);
+	
+	
 	if(single_id)
 	{
-		jQuery.post(sid_plugin_url, {single_id:single_id, op: 'send'}, function(d){
+		jQuery.post(sid_plugin_url, {single_id:single_id, optionalAuth:AuthString, op: 'send'}, function(d){
 		
 		if (isNaN(d)) { // #DV fix 
 			clearInterval(singleIDInterval);
@@ -64,7 +75,7 @@ function sid_populateData()
 		
 		if (obj.ALREADY_REGISTERED === 1){ 
 			// the user is already present in the DB
-			// PHP has added these var so we haven't to fill a form but we need only to reload the main page !
+			// PHP has added this var so we haven't to fill a form but we need only to reload the main page !
 			// TODO, if an hacker add this POST value ? nothing of serious will happen IMHO // TO DOUBLE CHECK 2015-02
 			window.top.location.reload();
 			return false;

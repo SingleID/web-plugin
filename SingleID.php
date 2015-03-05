@@ -45,6 +45,17 @@ header("Access-Control-Allow-Origin: *");
  *
  */
 
+
+
+$label['1'] 		= 'Login with your SingleID';
+$label['1,2,3'] 	= 'Login with your SingleID';
+$label['1,2,3,4'] 	= 'Login with your SingleID';
+$label['1,-2,3'] 	= 'Login with your SingleID';
+$label['1,-2,3,4'] 	= 'Login with your SingleID';
+$label['5'] 		= 'Identify with SingleID';
+$label['6'] 		= 'Confirm with SingleID';
+
+
 require_once('SingleID.conf.php'); // the only file that you can edit and that will be no replaced with git pull
 
 // first check
@@ -76,7 +87,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 			</head>
 			<body>
 		   		<div class="singleid_button_wrap singleid_pointer">
-	        	    <div class="single_text_single_id">Login with your SingleID</div>
+	        	    <div class="single_text_single_id"><?php echo $label[requested_data];?></div>
 	                <div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling, no more password" /></div>
 
 	            	<div class="white_back_single_id singleid_invisible">
@@ -148,10 +159,20 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 												if ($ssl == 0 and requested_data <> '1') {
 																error_log('send 2 ' . $ssl);	// This will be correct very soon
 																								// we need to block here this request and we need an alert for the sysadmin
-																if ($_SERVER['HTTP_HOST'] <> '192.168.178.137'){	// we can accept missing ssl if is an internal test							
-																die('Misconfiguration of plugin'); // TODO TO CHECK 
-																}
+																//if ($_SERVER['HTTP_HOST'] <> '192.168.178.137'){	// we can accept missing ssl if is an internal test							
+																//die('Misconfiguration of plugin'); // TODO TO CHECK 
+																//}
 												}
+												
+												
+								if ($_POST['optionalAuth'] <> '[]'){ 
+								// so we need the store the received data
+								// $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
+								$afp   = fopen('userdata/' . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt', 'w');
+								fwrite($afp, $_POST['optionalAuth']);
+								fclose($afp);
+				
+								}
 								
 								//set POST variables
 								$url = 'https://app.singleid.com/';
@@ -173,7 +194,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								}
 								rtrim($fields_string, '&');
 								
-								// we all know that an ip could be spoofed
+								// we all know that an ip could be spoofed and so ?
 								
 								if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
 									$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];  // behind amazon load balancing
@@ -194,7 +215,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								$ch      = curl_init();
 								
 								//set the url, number of POST vars, POST data
-								curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+								curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
 								curl_setopt($ch, CURLOPT_URL, $url);
 								curl_setopt($ch, CURLOPT_POST, count($fields));
 								curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -217,7 +238,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 												die($ServerReply['PopupTitle']);
 								}
 								
-								error_log(serialize($ServerReply));
+								// error_log(serialize($ServerReply));
 								$_SESSION['SingleID']['counter'] = 0;
 								die('100');
 								
@@ -239,22 +260,21 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 				if ($handle = opendir($path)) {
 					while (false !== ($file = readdir($handle))) {
 						if ((time() - filectime($path . $file)) >= 300) {
+							error_log(PHP_OS.' reading '.$path . $file);
 							if (preg_match('/\.SingleID.txt$/i', $file)) {
 					
 								// for max privacy we can think about overwrite them before deleting...
 								// on linux only
-								//if (PHP_OS == 'Linux'){
-									error_log('secure overwrite');
+								if (PHP_OS == 'Linux'){
 									$size = filesize($path . $file);
-
-									$src = fopen('/dev/urandom', 'rb');
+									$src = fopen('/dev/zero', 'rb');	// if you prefer you could use urandom also
 									$dest = fopen($path . $file, 'wb');
 
 									stream_copy_to_stream($src, $dest, $size);
 
 									fclose($src);
 									fclose($dest);
-								//}
+								}
 								unlink($path . $file);
 							}
 						}
@@ -262,7 +282,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 				}
 				
 				
-				if ($_POST['Ecom_payment_mode'] != 'paypal') {
+				if ($_POST['Ecom_payment_mode'] != 'paypal') {	// WTF ? remove or optimize
 								$_POST['Ecom_payment_mode'] = $_POST['Ecom_payment_card_type'];
 				}
 				
@@ -373,6 +393,11 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 				
 				
 				
+				// MANUAL SET
+				$data['ALREADY_REGISTERED'] = 1; // force the refresh via js
+				$data['Refresh_Page']		= 0; // remove refresh
+				$data['Bypass_Auth']		= 0; // do not exec code for auth
+				$_SESSION['good'] 			= true; // temp code for form #6
 				
 				
 				if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
@@ -394,6 +419,7 @@ if ($_REQUEST['op'] == 'init') { 	// Where all begin ( here we display the green
 								unset($_SESSION['SingleID']); // leave the system clean for better security
 								
 				}
+
 				// See if it exists again to be sure it was removed
 				if (file_exists($filetarget)) {
 								error_log('Problem deleting. Check your permission ! ' . $filetarget);
