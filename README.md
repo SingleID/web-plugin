@@ -1,18 +1,16 @@
 
-PLEASE NOTE:
-
-:	THIS PRELIMINARY PLUGIN IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
-:	At this time it is being published for internal use only. Please DO NOT RELY
-:	upon it until this notice has been removed. (Which should be soon!)
+	THIS WHITE-PAPER IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
+	At this time it is being published for internal use only. Please DO NOT RELY
+	upon it until this notice has been removed. (Which should be soon!)
 
 
 #### Abstract
 
-[SingleID](https://www.singleid.com) is a cloudless and data-decentralized identity provider with a privacy-preserving approach.
-SingleID has the potential to become the “holy grail” of a single, widely deployable electronic ID, based on an open source protocol than runs on top of well known, widely studied, already existing systems like SSL and AES.
+SingleID is a cloudless and data-decentralized identity provider with a privacy-preserving approach.
+SingleID has the potential to become the "holy grail" of a single, widely deployable electronic ID, based on an open source protocol than runs on top of well known, widely studied, already existing systems like SSL and AES.
 It provides a dramatically better user experience and at the same time a higher security than existing password­-based platforms for identifying and authenticating users as it does not require a central trusted third party. SingleID also automates form-filling with a single-­click based on a pre-aggregated master form stored in the user's smartphone app. 
 
-#### Latest revision of this Readme
+#### Latest revision of this White Paper
 
 Status: Draft
 Latest update: 2015-02-27
@@ -61,11 +59,18 @@ op4->op5
 
 ## Plugin Installation
 
-To use the **Official SingleID Web Plugin** on your site you must have in the same folder of you web form a file called plugin.php
+exec this on your website:
 
-The latest version of "plugin.php" is hosted, on [github](https://github.com/SingleID/web-plugin)
+- git clone https://github.com/SingleID/web-plugin/
+- cd web-plugin
+- mkdir userdata
+- chmod 0777 userdata -R
+ 
+ 
 
-For convenience, in this White-Paper, we will call the web form page as form.php
+The latest version of "SingleID.php" is hosted, on [github](https://github.com/SingleID/web-plugin)
+
+For convenience, in this doc, we will call the web form page as form.php
 
 
 
