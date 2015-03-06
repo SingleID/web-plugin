@@ -6,10 +6,6 @@ At this time it is being published for internal use only. Please DO NOT RELY
 upon it until this notice has been removed. (Which should be soon!)
 */
 
-// TODO to be included in .conf.php
-
-
-// this file will be rewritten from scratch during 3-7 march 2015
 
 
 if (!is_SingleID($_SESSION['SingleID']['who'])) {
