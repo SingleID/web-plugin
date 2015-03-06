@@ -15,6 +15,6 @@ define("admin_contact", ""); 	// You have to set this field only if requested_da
 define("STORAGE",'file');		// use files for temporary storage ( memcache or mysql will be included soon )
 define("ACCEPT",'personal');	// which profile we accept (allowed value are personal, business, both )
 define("LANGUAGE",'en');
-
+define("PATH",'userdata/');
 
 ?>

@@ -48,21 +48,24 @@ header("Access-Control-Allow-Origin: *");
 
 
 
+require('SingleID.conf.php'); // the only file that you can edit and that will be no replaced with git pull
+
+
 
 
 // before all
 if (STORAGE == 'file') {
-    if (!is_writable('userdata/')) {
-        error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 userdata/ -R ');
+    if (!is_writable(PATH)) {
+        error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 ' . PATH . ' -R ');
         die('<p>no write permission!</p>');
     }
 }
 
 
-
-require('SingleID.conf.php'); // the only file that you can edit and that will be no replaced with git pull
 require('MysqliDb.php');
 require('SingleID_functions.php');
+
+
 
 define('SINGLEID_SERVER_URL','https://app.singleid.com/');
 
@@ -203,27 +206,15 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     
-    // we need remove from this folder all the files older than 5 minutes for security reason !!!
+    // we need remove from this folder all the files older than 3 minutes for security reason !!!
     if (STORAGE == 'file') {
-        $path = 'userdata/';
-        if ($handle = opendir($path)) {
+        
+        if ($handle = opendir(PATH)) {
             while (false !== ($file = readdir($handle))) {
-                if ((time() - filectime($path . $file)) >= 300) {
+                if ((time() - filectime(PATH . $file)) >= 180) {
                     if (preg_match('/\.SingleID.txt$/i', $file)) {
                         
-                        // for max privacy we can overwrite them before deleting...
-                        // on linux only
-                        if (PHP_OS == 'Linux') {
-                            $size = filesize($path . $file);
-                            $src  = fopen('/dev/zero', 'rb'); // if you prefer you could use urandom also
-                            $dest = fopen($path . $file, 'wb');
-                            
-                            stream_copy_to_stream($src, $dest, $size);
-                            
-                            fclose($src);
-                            fclose($dest);
-                        }
-                        unlink($path . $file);
+                        safe_delete($file);
                     }
                 }
             }
@@ -237,8 +228,27 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     }
     
     
+} elseif (isset($_GET['UTID'])) {
+    
+    // a Device is requiring some encrypted data
+    if (!is_md5($_GET['UTID'])) {
+        die('Wrong data received!');
+        unset($_SESSION['SingleID']); // leave the system clean for better security
+    }
     
     
+    // open output
+	if (STORAGE == 'file') {
+		
+		$filetarget = './'. PATH . $_GET[UTID].'.auth.SingleID.txt';
+		$fh = fopen($filetarget, 'r');
+		$encdata = fread($fh, filesize($filetarget));
+		fclose($fh);
+		
+		safe_delete($_GET[UTID].'.auth.SingleID.txt');
+		
+		die($encdata);
+	}
     
     
 } elseif ($_REQUEST['op'] == 'getdata') {
@@ -249,7 +259,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     }
     
     if (STORAGE == 'file') {
-        $filetarget           = 'userdata/' . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
+        $filetarget           = PATH . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
         $data                 = unserialize(gzuncompress(file_get_contents($filetarget)));
         $data['Refresh_Page'] = 1;
     }
@@ -310,22 +320,18 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     //error_log('refresh');
     $_SESSION['SingleID']['counter']++;
     
-    $file = 'userdata/' . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
+    $file = PATH . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
     
     if ($_SESSION['SingleID']['counter'] > 120) {
-        //error_log('400-0000');
-        print '400'; // too much time is passed
+        die('400'); // too much time is passed
         // the output number code are inspired from the http status code
-        // 400 = error
     } else if (is_file($file)) { // the file exist !
-        
-        // error_log('DEBUG: DATA RECEIVED FROM DEVICE');
-        print '200'; // the post data has been received from the device so we launch the JS to populate the fields
+        die('200'); // the post data has been received from the device so we launch the JS to populate the fields
     } else {
-        print '100';
-        // continue... misuse as refresh
+        die('100');	// continue... misuse as refresh
+        
     }
-    die();
+
 }
 
 

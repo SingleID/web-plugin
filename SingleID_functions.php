@@ -1,5 +1,27 @@
 <?php
 
+
+
+
+function safe_delete($file){
+	// for max privacy we can overwrite them before deleting...
+	// on linux only
+	if (PHP_OS == 'Linux') {
+		$size = filesize(PATH . $file);
+		$src  = fopen('/dev/zero', 'rb'); // if you prefer you could use urandom also
+		$dest = fopen(PATH . $file, 'wb');
+		
+		stream_copy_to_stream($src, $dest, $size);
+		
+		fclose($src);
+		fclose($dest);
+	}
+	unlink(PATH . $file);
+}
+
+
+
+
 function print_login_button($language = 'en',$requested_data){
 	
 	
