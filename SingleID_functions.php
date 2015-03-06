@@ -1,14 +1,57 @@
 <?php
 
 
+function gimme_visitor_ip(){
+	
+	// we all know that an ip could be spoofed and so ? What do you suggest ?
+	if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
+		$ip = $_SERVER['HTTP_X_FORWARDED_FOR']; // behind amazon load balancing
+	} else {
+		$ip = $_SERVER['REMOTE_ADDR'];
+	}
+	
+	$ip = filter_var($ip, FILTER_VALIDATE_IP);
+	$ip = ($ip === false) ? '0.0.0.0' : $ip;
+
+	return $ip;
+}
+
+function send_request_to_singleid_server($fields,$fields_string){
+	
+	$ip = gimme_visitor_ip();
+	
+	$headers = array(
+		'Authorization: ' . billing_key,
+		'Browser_ip: ' . $ip,
+		'admin_contact: ' . admin_contact
+	);
+	//open connection
+	$ch      = curl_init();
+	
+	//set the url, number of POST vars, POST data
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+	curl_setopt($ch, CURLOPT_URL, SINGLEID_SERVER_URL);
+	curl_setopt($ch, CURLOPT_POST, count($fields));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	
+	//execute post
+	$result       = curl_exec($ch);
+	$responseInfo = curl_getinfo($ch);
+	$ServerReply  = json_decode($result, true);
+	curl_close($ch); //close connection because we are brave 
+	
+	return $ServerReply;
+}
 
 
 function safe_delete($file){
-	// for max privacy we can overwrite them before deleting...
+	// for better privacy we can overwrite them before deleting...
 	// on linux only
 	if (PHP_OS == 'Linux') {
 		$size = filesize(PATH . $file);
-		$src  = fopen('/dev/zero', 'rb'); // if you prefer you could use urandom also
+		$src  = fopen('/dev/zero', 'rb'); // if you prefer you could use urandom
 		$dest = fopen(PATH . $file, 'wb');
 		
 		stream_copy_to_stream($src, $dest, $size);

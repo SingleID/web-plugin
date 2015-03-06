@@ -81,10 +81,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     if (STORAGE == 'file') {
 		// this step is for extra security. If you really know what are you doing you can remove
 		// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
-		if (!file_exists('userdata/index.html')) {
+		if (!file_exists( PATH . 'index.html')) {
 			// prevent directory browsing creating a fake file
 			$securitydata = '<html><h1>Silence is gold</h1></html>';
-			$fp           = fopen('userdata/index.html', 'w');
+			$fp           = fopen(PATH . 'index.html', 'w');
 			fwrite($fp, $securitydata);
 			fclose($fp);
 		}
@@ -117,7 +117,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
             // here we need to recover the password shared in a previous request
             
-            $afp = fopen('userdata/' . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt', 'w');
+            $afp = fopen(PATH . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt', 'w');
             fwrite($afp, $_POST['optionalAuth']);
             fclose($afp);
             
@@ -143,39 +143,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         }
         rtrim($fields_string, '&');
         
-        // we all know that an ip could be spoofed and so ? What you suggest ?
+
+        $ServerReply = send_request_to_singleid_server($fields,$fields_string);
         
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR']; // behind amazon load balancing
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-        
-        
-        $ip = filter_var($ip, FILTER_VALIDATE_IP);
-        $ip = ($ip === false) ? '0.0.0.0' : $ip;
-        
-        
-        $headers = array(
-            'Authorization: ' . billing_key,
-            'Browser_ip: ' . $ip
-        );
-        //open connection
-        $ch      = curl_init();
-        
-        //set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_URL, SINGLEID_SERVER_URL);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
-        //execute post
-        $result       = curl_exec($ch);
-        $responseInfo = curl_getinfo($ch);
-        $ServerReply  = json_decode($result, true);
-        curl_close($ch); //close connection because we are brave 
         
         
         if ($ServerReply['Reply'] <> 'ok') {
@@ -193,7 +163,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
 } elseif (isset($_POST['UTID'])) {
     
-    // a Device has sent something
+    // an app has sent something
     if (!is_md5($_POST['UTID'])) {
         die('Wrong data received!');
         unset($_SESSION['SingleID']); // leave the system clean for better security
@@ -222,7 +192,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         
         // so we need the store the received data
         $data = gzcompress(serialize($_POST), 9); // we compress only to avoid some research with grep from script kiddies like you :-P
-        $fp   = fopen('userdata/' . $_POST['UTID'] . '.SingleID.txt', 'w');
+        $fp   = fopen(PATH . $_POST['UTID'] . '.SingleID.txt', 'w');
         fwrite($fp, $data);
         fclose($fp);
     }
@@ -315,9 +285,8 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
 } elseif ($_REQUEST['op'] == 'refresh') {
     
-    // request made from browser !
+    // request made from javascript that is refreshing the iframe
     
-    //error_log('refresh');
     $_SESSION['SingleID']['counter']++;
     
     $file = PATH . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
