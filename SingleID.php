@@ -197,6 +197,12 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         fclose($fp);
     }
     
+    if (requested_data == '5'){
+		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+		create_and_share_random_password();
+	}
+    
+    
     
 } elseif (isset($_GET['UTID'])) {
     

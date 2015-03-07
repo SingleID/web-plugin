@@ -1,6 +1,33 @@
 <?php
 
 
+
+
+
+function create_and_share_random_password(){
+	
+	// if table doesn't exist ?
+	
+	
+	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
+	$Salt = bin2hex($Bytes);
+	
+	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
+	$HexPassword = bin2hex($Bytes);
+	
+	
+	// if table exist but we want to update the password ?
+	
+	// in the table we will store
+	// SingleID | salt | md5(salt + md5( salt + password ))
+	
+	
+}
+
+
+
+
+
 function gimme_visitor_ip(){
 	
 	// we all know that an ip could be spoofed and so ? What do you suggest ?
@@ -15,6 +42,9 @@ function gimme_visitor_ip(){
 
 	return $ip;
 }
+
+
+
 
 function send_request_to_singleid_server($fields,$fields_string){
 	
