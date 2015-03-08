@@ -106,9 +106,6 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
         $res              = mysqli_query($mysqli, $sql);
         $just_inserted_id = mysqli_insert_id($mysqli);
         
-        $agree_is_ok = time();
-        $ip          = filter_var($ip, FILTER_VALIDATE_IP);
-        $ip          = ($ip === false) ? '0.0.0.0' : $ip;
         
         $data['Refresh_Page'] = 1; // be sure about refresh
         

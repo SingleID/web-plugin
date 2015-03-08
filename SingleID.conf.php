@@ -6,6 +6,19 @@ At this time it is being published for internal use only. Please DO NOT RELY
 upon it until this notice has been removed. (Which should be soon!)
 */
 
+/*
+
+ <option value="1">Personal data only</option>
+ <option value="1,2,3">Personal, Billing and Shipping data</option>
+ <option value="1,-2,3">Personal, Billing and Shipping data ( Without credit card ) </option>
+ <option value="1,2,3,4">Personal, Billing, Shipping and Identification data</option>
+ <option value="1,-2,3,4">Personal, Billing ( Without credit card ), Shipping and Identification data</option>
+ <option value="5">All data with a random password as final handshake</option>
+ <option value="6">All data with the previous exchanged random password</option>
+
+*/
+ 
+ 
 
 define("LOGO_URL", 'http://www.vantax.eu/img_data/graph.png');
 define("SITE_NAME", 'Simple Test');

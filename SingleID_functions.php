@@ -59,6 +59,9 @@ function send_request_to_singleid_server($fields,$fields_string){
 	$ch      = curl_init();
 	
 	//set the url, number of POST vars, POST data
+	
+	
+	curl_setopt($ch, CURLOPT_TIMEOUT, 20); 
 	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
 	curl_setopt($ch, CURLOPT_URL, SINGLEID_SERVER_URL);
 	curl_setopt($ch, CURLOPT_POST, count($fields));

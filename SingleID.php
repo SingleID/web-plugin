@@ -13,34 +13,27 @@ header("Access-Control-Allow-Origin: *");
 /*
  * SingleID WEB PLUGIN -> https://github.com/SingleID/web-plugin/
  * 
- * To use the plugin on your site please upload this file to your web root directory.
- * You must have jQuery on your site. You can install jquery by adding these line to your head:
- * <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
- *
- * 
+ * To use the plugin on your site follow these step:
+ * go to the folder that contain your registration / identification form ( example form.php )
+ * exec:
  * 
  * git clone https://github.com/SingleID/web-plugin/
  * cd web-plugin
  * mkdir userdata
  * chmod 0777 userdata -R
  * 
+ * 
+ * You must have jQuery on the page that will embed this iframe.
+ * You can install jquery by adding these line to your head (example: form.php )
+ * 
+ * <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+ *
+ * 
  * The next step is to insert the SingleID Button. Place this line of code to the place of your site where you want to place the button:
  * 
  * <iframe src="web-plugin/SingleID.php?op=init" width="270" height="80" frameborder="0"></iframe>
  *
- * On 3 you must use your site logo and site name.
- * On line 4 and 5 you can change the data that you want to receive
- *  
- <option value="1">Personal data only</option>
- <option value="1,2,3">Personal, Billing and Shipping data</option>
- <option value="1,-2,3">Personal, Billing and Shipping data ( Without credit card ) </option>
- <option value="1,2,3,4">Personal, Billing, Shipping and Identification data</option>
- <option value="1,-2,3,4">Personal, Billing ( Without credit card ), Shipping and Identification data</option>
- <option value="5">All data with a random password as final handshake</option>
- <option value="6">All data with the previous exchanged random password</option>
- *
- *
- * In the directory where you place SingleID.php you must make a dir called "userdata" and make it writeable.
+ * 
  *
  *
  */
@@ -262,9 +255,48 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
-        
-        require_once('SingleID_auth.php');
-        // userAuth(); // to switch !
+			// here is the crucial point
+			// a device has sent the data to the iframe so we can do a lot of thing
+			// the flow should be the following
+			
+			
+			// is this SingleID already present in my user table ?
+			
+			if (Is_this_SingleID_already_present() == true){
+				if (requested_data == 6){
+						
+				}
+					
+					
+				if(Is_this_user_enabled() == true){
+					
+					
+					if (requested_data == 5){ // --> inside update user data !
+						
+					}
+					update_the_user_data();
+					user_is_logged();
+				
+				}else{
+					display_error_mex();
+				}
+				
+			}else{
+				
+				if( Is_this_a_really_new_user_for_my_db == false){ // if a user is arelady registered ?
+					display_error_mex();
+				}else{
+					
+					// the email sent is not present in the DB. So is a new User !
+					// we need to create a record about this new user
+					create_the_user();	// according to request 5 and 6
+					user_is_logged();	
+					
+				}
+				
+			}
+			
+			// userAuth(); // to switch !
         
     }
     // Printing the data (received) the js/plugin.js will fill the form.
