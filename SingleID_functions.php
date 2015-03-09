@@ -168,6 +168,12 @@ $label['en']['6'] 			= 'Confirm with SingleID';
 function singleid_parse_profile($data, $accepted)
 {
     
+    
+    foreach ($data as $key => $value) {
+		$data[$key] = strip_tags($value);	// redundant
+    }
+        
+        
     // before anything we need to check if the profile contains a minimum of data !
     if (($data['which_set'] == 'personal') and (($accepted == 'personal') or ($accepted == 'both'))) { // ho ricevuto un set di dati di tipo personale
         // the minimum required data are:

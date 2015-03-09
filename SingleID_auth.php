@@ -14,6 +14,48 @@ if (!is_SingleID($_SESSION['SingleID']['who'])) {
 }
 
 
+
+
+
+
+
+
+function Is_this_SingleID_already_present() {
+	
+}
+function Is_this_user_enabled() {
+	
+}
+
+
+function update_the_user_data() {
+	
+}
+
+function user_is_logged() {
+	
+}
+
+function display_error_mex() {
+	
+}
+
+function Is_this_a_really_new_user_for_my_db() {
+	
+}
+function create_the_user() {
+	
+}	
+
+function create_and_share_random_password() {
+	
+}
+
+
+
+die();
+
+
 // Is This SingleID already present in the DB ?
 $sql = ''; // Check
 $res = mysqli_query($mysqli, $sql);
@@ -107,7 +149,7 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
         $just_inserted_id = mysqli_insert_id($mysqli);
         
         
-        $data['Refresh_Page'] = 1; // be sure about refresh
+        //@@@@// $data['Refresh_Page'] = 1; // be sure about refresh
         
     }
     

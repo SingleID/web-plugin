@@ -155,7 +155,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
 } elseif (isset($_POST['UTID'])) {
-    
+    $_POST=array_map("strip_tags",$_POST);
     // an app has sent something
     if (!is_md5($_POST['UTID'])) {
         die('Wrong data received!');
@@ -198,7 +198,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
 } elseif (isset($_GET['UTID'])) {
-    
+	$_GET=array_map("strip_tags",$_GET);
     // a Device is requiring some encrypted data
     if (!is_md5($_GET['UTID'])) {
         die('Wrong data received!');
@@ -248,10 +248,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     // MANUAL SET
-    $data['ALREADY_REGISTERED'] = 1; // force the refresh via js
+    $data['ALREADY_REGISTERED'] = 0; // force the refresh via js
     $data['Refresh_Page']       = 0; // remove refresh
-    $data['Bypass_Auth']        = 0; // do not exec code for auth
-    $_SESSION['good']           = true; // temp code for form #6
+    $data['Bypass_Auth']        = 1; // do not exec code for auth
+    // $_SESSION['good']           = true; // temp code for form #6
     
     
     if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
@@ -261,6 +261,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			
 			
 			// is this SingleID already present in my user table ?
+	
+	
+			require('SingleID_auth.php');
 			
 			if (Is_this_SingleID_already_present() == true){
 				if (requested_data == 6){
@@ -296,7 +299,6 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				
 			}
 			
-			// userAuth(); // to switch !
         
     }
     // Printing the data (received) the js/plugin.js will fill the form.

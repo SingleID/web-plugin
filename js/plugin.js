@@ -83,6 +83,7 @@ function sid_populateData()
 		
 		jQuery.each( obj, function( key, value ) {
 			
+				
 				var input_type = parent.window.jQuery('#'+key).attr('type');
 				
 				if(!input_type)
