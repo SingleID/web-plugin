@@ -1,5 +1,5 @@
 
-	THIS WHITE-PAPER IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
+	THIS PLUGIN IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
 	At this time it is being published for internal use only. Please DO NOT RELY
 	upon it until this notice has been removed. (Which should be soon!)
 
@@ -10,56 +10,18 @@ SingleID is a cloudless and data-decentralized identity provider with a privacy-
 SingleID has the potential to become the "holy grail" of a single, widely deployable electronic ID, based on an open source protocol than runs on top of well known, widely studied, already existing systems like SSL and AES.
 It provides a dramatically better user experience and at the same time a higher security than existing password­-based platforms for identifying and authenticating users as it does not require a central trusted third party. SingleID also automates form-filling with a single-­click based on a pre-aggregated master form stored in the user's smartphone app. 
 
-#### Latest revision of this White Paper
+#### Latest revision of this Doc
 
 Status: Draft
-Latest update: 2015-02-27
+Latest update: 2015-03-10
 
 ---
 
-# How to request data from a Device 
 
-The simple way to request data from a SingleID device is with a REST CALL to the SingleID Server.
-
-This can be done with a plugin on the recipient system.
-
-If for recipient system you are thinking to a website you can use the official SingleID "web plugin" button .
- 
-If for recipient system you intend something different like an ATM or a cash register you have only to follow the specific below.
-
-For "web plugin" we intend an html code that had to be embedded on the form page as an iframe. This is the easiest way to install on each recipient system capable to render HTML page.
-
-Alternative version of the plugin are welcome as they will follow the request scheme described in this document.
-
-
-Another way to read the data stored in a SingleID Device is reading a QrCode.
-The QrCode specs are written below.
-
-
-```flow
-st=>start: Recipient System
-e=>end
-
-op2=>operation: SingleID Web Plugin button
-op3=>operation: Push Notification reach user's device
-op4=>operation: User's Device will send the requested data Set
-op5=>end: The Plugin will fill the webform
-sub2=>subroutine: [REST CALL] Asking SingleID Server to forward request to corresponding device
-cond=>condition: Enter your SingleID
-cond2=>condition: User accept ?
-io=>operation: You can always manually fill the Form
-
-st->op2->cond
-cond(no)->io(bottom)->e
-cond(yes)->sub2->op3->cond2
-cond2(no)->io->e
-cond2(yes)->op4
-op4->op5
-```
 
 ## Plugin Installation
 
-exec this on your website:
+exec this on your server:
 
 - git clone https://github.com/SingleID/web-plugin/
 - cd web-plugin
@@ -68,15 +30,11 @@ exec this on your website:
  
  
 
-The latest version of "SingleID.php" is hosted, on [github](https://github.com/SingleID/web-plugin)
-
-For convenience, in this doc, we will call the web form page as form.php
-
 
 
 ### Requirements of the web plugin
 
-form.php must have jquery
+The page that include the iframe must have jquery
 If you don't use jquery on that page you have to add with this line of code:
 
 
@@ -92,18 +50,9 @@ Place this code where you want to display the button:
 	<iframe src="SingleID.php?op=init" width="290" height="80" frameborder="0"></iframe>
 
 
----
-
-PLEASE NOTE:
-
-:	You need also to create a folder called *userdata/* and make it writable from plugin.php
-:	Please make sure that this folder is not browsable. For better security we recommended to create an empty index.html in this folder
-
----
 
 
-
-Before testing you have to define 5 constants at the beginning of plugin.php
+Before testing you have to define some constants in SingleID.conf.php
 
 
 LOGO_URL

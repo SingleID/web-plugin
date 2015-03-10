@@ -195,7 +195,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		create_and_share_random_password();
 	}
     
-    
+    die('ok');	// if not died with create_and_share_random_password()
     
 } elseif (isset($_GET['UTID'])) {
 	$_GET=array_map("strip_tags",$_GET);
