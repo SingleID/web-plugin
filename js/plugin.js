@@ -1,3 +1,12 @@
+
+
+/*
+ * SingleID WEB PLUGIN -> https://github.com/SingleID/web-plugin/
+ * 
+ * 
+ */
+ 
+ 
 var sid_div;
 var sid_domain = document.domain;
 var sid_url = location.origin + location.pathname;

@@ -33,9 +33,9 @@ define("PATH",'userdata/');
 // if you use Mysql as storage or if you use set "requested_data" to 5 you need also to set the following var
 
 $HOST = 'localhost';
-$USER = 'user';
-$PASS = 'pass';
-$DB = 'SingleID';
+$USER = 'root';
+$PASS = 'password';
+$DB = 'SingleID_users';
 
 
 

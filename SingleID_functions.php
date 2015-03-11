@@ -2,9 +2,24 @@
 
 
 
+function create_a_mysql_table(){
+	
+/*
+
+CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
+  `SingleID` char(8) NOT NULL,
+  `salt` char(24) NOT NULL,
+  `hashed` char(32) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `SingleID` (`SingleID`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
 
-function create_and_share_random_password(){
+*/
+
+}
+
+function create_and_share_random_password($SingleID){
 	
 	// if table doesn't exist ?
 	
@@ -20,8 +35,10 @@ function create_and_share_random_password(){
 	
 	// in the table we will store
 	// SingleID | salt | md5(salt + md5( salt + password ))
-	
-	
+
+
+
+
 }
 
 

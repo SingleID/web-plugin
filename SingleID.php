@@ -23,8 +23,8 @@ header("Access-Control-Allow-Origin: *");
  * chmod 0777 userdata -R
  * 
  * 
- * You must have jQuery on the page that will embed this iframe.
- * You can install jquery by adding these line to your head (example: form.php )
+ * You must have jQuery on the page that embed this script.
+ * You can install jQuery by adding these line to your head
  * 
  * <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
  *
@@ -41,7 +41,7 @@ header("Access-Control-Allow-Origin: *");
 
 
 
-require('SingleID.conf.php'); // the only file that you can edit and that will be no replaced with git pull
+require('SingleID.conf.php'); // the only file that you can edit and that will be no replaced on your next git pull
 
 
 
@@ -97,16 +97,17 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         $protocol[0] = 'http';
         
         if ($ssl == 0 and requested_data <> '1') {
-            error_log('send 2 ' . $ssl); // This will be correct very soon
+            error_log('SSL needed! ' . $ssl); // This will be correct very soon
             // we need to block here this request and we need an alert for the sysadmin
             //if ($_SERVER['HTTP_HOST'] <> '192.168.178.137'){    // we can accept missing ssl if is an internal test                            
-            //die('Misconfiguration of plugin'); // TODO TO CHECK 
+            die('Misconfiguration of plugin'); // TODO TO CHECK 
             //}
         }
         
         
-        if ($_POST['optionalAuth'] <> '[]') {
-            // so we need the store the received data
+        if ($_POST['optionalAuth'] <> '{}') {
+            // This if will be defined in April
+            // all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
             // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
             // here we need to recover the password shared in a previous request
             
@@ -192,7 +193,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     if (requested_data == '5'){
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-		create_and_share_random_password();
+		create_and_share_random_password($_SESSION['SingleID']);
 	}
     
     die('ok');	// if not died with create_and_share_random_password()
@@ -204,6 +205,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         die('Wrong data received!');
         unset($_SESSION['SingleID']); // leave the system clean for better security
     }
+    if (!is_SingleID($val)){
+		die('you should not be here');
+        unset($_SESSION['SingleID']); // leave the system clean for better security
+	}
     
     
     // open output
