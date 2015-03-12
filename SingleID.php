@@ -97,14 +97,14 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         $protocol[1] = 'https';
         $protocol[0] = 'http';
         
-        /*if ($ssl == 0 and requested_data <> '1') { TODO -> double check server side }
+        if ($ssl == 0 and requested_data <> '1') // { TODO -> double check server side }
             error_log('SSL needed! ' . $ssl); // This will be correct very soon
             // we need to block here this request and we need an alert for the sysadmin
             if ($_SERVER['HTTP_HOST'] == '192.168.178.137'){    // we can accept missing ssl if is an internal test
             unset($_SESSION['SingleID']); // leave the system clean for better security                          
             die('Misconfiguration of plugin'); // TODO TO CHECK 
             }
-        }*/
+        }
         
         
         if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
@@ -197,7 +197,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     if (requested_data == '5'){
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-		create_and_share_random_password($_SESSION['SingleID']['who']); // ERROR HERE !
+		create_and_share_random_password($_SESSION['SingleID']['who']); // ERROR HERE ! We need an update app side ! TODO TOFIX ASAP
 	}
     
     die('ok');	// if not died with create_and_share_random_password()
@@ -283,6 +283,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 					/*if (requested_data == 5){ // --> inside update user data !
 						$db = new Mysqlidb ('localhost', 'root', '', 'testdb');
 						create_and_share_random_password($SingleID)
+						* NOT HERE !
 					}*/
 					update_the_user_data();
 					user_is_logged();

@@ -57,9 +57,6 @@ die();
 
 
 // Is This SingleID already present in the DB ?
-$sql = ''; // Check
-$res = mysqli_query($mysqli, $sql);
-$l   = mysqli_fetch_row($res);
 
 
 // Possibilities
@@ -92,7 +89,6 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
     // yeah, the user is present and is enabled
     error_log('user is present ' . $l[0] . ' and enabled');
     
-    // first UPDATE DB TRANNE NOME E COGNOME AND THEN LOGIN !
     $sql_update = '';
     $res        = mysqli_query($mysqli, $sql_update);
     
@@ -126,11 +122,6 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
     
     
     
-    
-    $sql = ''; // to improve !
-    $res = mysqli_query($mysqli, $sql);
-    $v   = mysqli_fetch_row($res);
-    
     if (is_numeric($v[0])) {
         
         $data['Refresh_Page'] = 0; // remove refresh
@@ -146,7 +137,6 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
         $just_inserted_id = mysqli_insert_id($mysqli);
         
         
-        //@@@@// $data['Refresh_Page'] = 1; // be sure about refresh
         
     }
     
