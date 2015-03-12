@@ -24,20 +24,29 @@ function create_and_share_random_password($SingleID){
 	// if table doesn't exist ?
 	
 	
-	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
+	$Bytes = openssl_random_pseudo_bytes(12, $cstrong);
 	$Salt = bin2hex($Bytes);
 	
 	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$HexPassword = bin2hex($Bytes);
 	
-	
+	global $db;
+
+    $data = Array(
+        'SingleID' => $SingleID,
+        'salt' => $Salt,
+        'hashed' => md5($Salt.md5($Salt.$HexPassword))
+		);
+    $id = $db->insert ('SingleID_Tokens', $data);
+    
 	// if table exist but we want to update the password ?
 	
-	// in the table we will store
+	// in the table we store
 	// SingleID | salt | md5(salt + md5( salt + password ))
-
-
-
+	if($id == $SingleID){
+	die($HexPassword);
+	error_log('successful saved' . $HexPassword . ' for '. $SingleID);
+	}
 
 }
 

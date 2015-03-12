@@ -83,6 +83,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		}
 	}
     
+    
     $_SESSION['SingleID']['hash'] = md5(mt_rand(1, mt_getrandmax()) . microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
     
     
@@ -96,16 +97,17 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         $protocol[1] = 'https';
         $protocol[0] = 'http';
         
-        if ($ssl == 0 and requested_data <> '1') {
+        /*if ($ssl == 0 and requested_data <> '1') { TODO -> double check server side }
             error_log('SSL needed! ' . $ssl); // This will be correct very soon
             // we need to block here this request and we need an alert for the sysadmin
-            //if ($_SERVER['HTTP_HOST'] <> '192.168.178.137'){    // we can accept missing ssl if is an internal test                            
+            if ($_SERVER['HTTP_HOST'] == '192.168.178.137'){    // we can accept missing ssl if is an internal test
+            unset($_SESSION['SingleID']); // leave the system clean for better security                          
             die('Misconfiguration of plugin'); // TODO TO CHECK 
-            //}
-        }
+            }
+        }*/
         
         
-        if ($_POST['optionalAuth'] <> '{}') {
+        if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
             // This if will be defined in April
             // all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
             // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
@@ -159,9 +161,11 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     $_POST=array_map("strip_tags",$_POST);
     // an app has sent something
     if (!is_md5($_POST['UTID'])) {
-        die('Wrong data received!');
         unset($_SESSION['SingleID']); // leave the system clean for better security
+        die('Wrong data received!');
     }
+    
+    
     
     
     if ($_POST['Ecom_payment_mode'] != 'paypal') { // WTF ? remove or optimize
@@ -193,7 +197,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     if (requested_data == '5'){
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-		create_and_share_random_password($_SESSION['SingleID']);
+		create_and_share_random_password($_SESSION['SingleID']['who']); // ERROR HERE !
 	}
     
     die('ok');	// if not died with create_and_share_random_password()
@@ -202,13 +206,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	$_GET=array_map("strip_tags",$_GET);
     // a Device is requiring some encrypted data
     if (!is_md5($_GET['UTID'])) {
+		unset($_SESSION['SingleID']); // leave the system clean for better security
         die('Wrong data received!');
-        unset($_SESSION['SingleID']); // leave the system clean for better security
     }
-    if (!is_SingleID($val)){
-		die('you should not be here');
-        unset($_SESSION['SingleID']); // leave the system clean for better security
-	}
+    
     
     
     // open output
@@ -228,8 +229,8 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 } elseif ($_REQUEST['op'] == 'getdata') {
     
     if (!is_md5($_SESSION['SingleID']['hash'])) {
-        die('Wrong data to recover');
         unset($_SESSION['SingleID']); // leave the system clean
+        die('Wrong data to recover');
     }
     
     if (STORAGE == 'file') {
@@ -279,9 +280,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				if(Is_this_user_enabled() == true){
 					
 					
-					if (requested_data == 5){ // --> inside update user data !
-						
-					}
+					/*if (requested_data == 5){ // --> inside update user data !
+						$db = new Mysqlidb ('localhost', 'root', '', 'testdb');
+						create_and_share_random_password($SingleID)
+					}*/
 					update_the_user_data();
 					user_is_logged();
 				

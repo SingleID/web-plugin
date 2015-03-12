@@ -16,7 +16,10 @@ if (!is_SingleID($_SESSION['SingleID']['who'])) {
 
 
 
-
+// what about PDO or filter var ?
+foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
+    $datasafe[$key] = mysqli_real_escape_string($mysqli, $val);
+}
 
 
 
@@ -43,13 +46,10 @@ function display_error_mex() {
 function Is_this_a_really_new_user_for_my_db() {
 	
 }
+
 function create_the_user() {
 	
 }	
-
-function create_and_share_random_password() {
-	
-}
 
 
 
@@ -85,10 +85,7 @@ $l   = mysqli_fetch_row($res);
 // We need to launch an update query of the user data ( if met the minimum profile data request )
 
 // Brainstorming on... if the user now has just logged with a personal profile and then with a company profile ?
-// what about PDO or filter var ?
-foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
-    $datasafe[$key] = mysqli_real_escape_string($mysqli, $val);
-}
+
 
 
 if ((is_numeric($l[0])) and ($l[3] == 1)) {
