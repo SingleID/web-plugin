@@ -28,6 +28,12 @@ function Is_this_SingleID_already_present() {
 }
 function Is_this_user_enabled() {
 	
+	// NO
+	$data['Refresh_Page'] = 0; // remove refresh
+    $data['Bypass_Auth']  = 1; // do not exec code for auth
+    $data['Mex']          = 'Your user is disabled on this site';
+    $data['Show_Error']   = 1; // shows a javascript error
+    
 }
 
 
@@ -44,7 +50,14 @@ function display_error_mex() {
 }
 
 function Is_this_a_really_new_user_for_my_db() {
-	
+		
+		// YES
+		
+		// NO
+		$data['Refresh_Page'] = 0; // remove refresh
+        $data['Bypass_Auth']  = 1; // do not exec code for auth
+        $data['Mex']          = 'The email of your SingleID profile is already registered. Log in in the old way and add your SingleID in your profile';
+        $data['Show_Error']   = 1; // shows a javascript error
 }
 
 function create_the_user() {
@@ -107,10 +120,6 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
     
 } elseif ((is_numeric($l[0])) and ($l[3] == 0)) {
     
-    $data['Refresh_Page'] = 0; // remove refresh
-    $data['Bypass_Auth']  = 1; // do not exec code for auth
-    $data['Mex']          = 'Your user is disabled on this site';
-    $data['Show_Error']   = 1; // shows a javascript error
     
 } elseif (!is_numeric($l[0])) { // the search with the singleid has returned nothing.
     // So we need to check if the email sent from the SingleId Device is already stored in this DB
@@ -124,10 +133,7 @@ if ((is_numeric($l[0])) and ($l[3] == 1)) {
     
     if (is_numeric($v[0])) {
         
-        $data['Refresh_Page'] = 0; // remove refresh
-        $data['Bypass_Auth']  = 1; // do not exec code for auth
-        $data['Mex']          = 'The email of your SingleID profile is already registered. Log in in the old way and add your SingleID in your profile';
-        $data['Show_Error']   = 1; // shows a javascript error
+       
         
     } else { // the user has not a SingleID and the email sent is not present in the DB. So is a new User !
         

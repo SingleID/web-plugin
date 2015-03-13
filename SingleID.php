@@ -189,7 +189,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         }
         
         // so we need the store the received data
-        $data = gzcompress(serialize($_POST), 9); // we compress only to avoid some research with grep from script kiddies like you :-P
+        $data = base64_encode(gzcompress(serialize($_POST), 9)); // we compress only to avoid some research with grep from script kiddies like you :-P
         $fp   = fopen(PATH . $_POST['UTID'] . '.SingleID.txt', 'w');
         fwrite($fp, $data);
         fclose($fp);
@@ -235,7 +235,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     if (STORAGE == 'file') {
         $filetarget           = PATH . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
-        $data                 = unserialize(gzuncompress(file_get_contents($filetarget)));
+        $data                 = unserialize(gzuncompress(base64_decode(file_get_contents($filetarget))));
         $data['Refresh_Page'] = 1;
     }
     // if this value is set to 1
