@@ -60,7 +60,7 @@ require('SingleID_functions.php');
 
 
 
-define('SINGLEID_SERVER_URL','https://app.singleid.com/');
+define('SINGLEID_SERVER_URL','https://app.singleid.com/'); // don't change this
 
 session_start();
 
@@ -152,9 +152,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         $_SESSION['SingleID']['counter'] = 0;
         die('100'); // js will use this code for refresh
         
-    } else {
-        die('Invalid SingleID');
-    }
+    //} else {
+    //    die('Invalid SingleID');
+    //}
     
     
 } elseif (isset($_POST['UTID'])) {
@@ -195,14 +195,14 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         fclose($fp);
     }
     
-    if (requested_data == '5'){
+    if (requested_data == '5'){ // TODO in April 2015
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		create_and_share_random_password($_SESSION['SingleID']['who']); // ERROR HERE ! We need an update app side ! TODO TOFIX ASAP
 	}
     
     die('ok');	// if not died with create_and_share_random_password()
     
-} elseif (isset($_GET['UTID'])) {
+} elseif (isset($_GET['UTID'])) { // TODO in April 2015
 	$_GET=array_map("strip_tags",$_GET);
     // a Device is requiring some encrypted data
     if (!is_md5($_GET['UTID'])) {
@@ -226,7 +226,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	}
     
     
-} elseif ($_REQUEST['op'] == 'getdata') {
+} elseif ($_REQUEST['op'] == 'getdata') {	// the js from desktop browser is checking for data (if the device has already replied)
     
     if (!is_md5($_SESSION['SingleID']['hash'])) {
         unset($_SESSION['SingleID']); // leave the system clean
@@ -236,7 +236,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     if (STORAGE == 'file') {
         $filetarget           = PATH . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
         $data                 = unserialize(gzuncompress(base64_decode(file_get_contents($filetarget))));
-        $data['Refresh_Page'] = 1;
+    //    $data['Refresh_Page'] = 1;
     }
     // if this value is set to 1
     // The javascript knows that is not a form filling example but the data has been processed from PHP
@@ -249,15 +249,27 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     $data = singleid_parse_profile($data, ACCEPT);
     
     
-    
-    
+    if (isset($data['ALREADY_REGISTERED'])){
+		// how is possible ?
+		unset($_SESSION['SingleID']); // leave the system clean
+        die('Wrong 255');
+	}
+    // if (isset($data['Refresh_Page'])){
+	//	// how is possible ?
+	//	unset($_SESSION['SingleID']); // leave the system clean
+    //    die('Wrong 260');
+	//}
+	if (isset($data['Bypass_Auth'])){
+		// how is possible ?
+		unset($_SESSION['SingleID']); // leave the system clean
+        die('Wrong 265');
+	}
     
     
     // MANUAL SET
-    $data['ALREADY_REGISTERED'] = 0; // force the refresh via js
-    $data['Refresh_Page']       = 0; // remove refresh
-    $data['Bypass_Auth']        = 1; // do not exec code for auth
-    // $_SESSION['good']           = true; // temp code for form #6
+    $data['ALREADY_REGISTERED'] = 0; // if set to 1 the JS will not try to populate a form
+    //$data['Refresh_Page']       = 0; // remove refresh
+    $data['Bypass_Auth']        = 1; // if set to 1 the php code with the query will not be executed
     
     
     if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
@@ -323,7 +335,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         
     }
     
-    // See if it exists again to be sure it was removed
+    // See if it exists again to be sure it was removed // paranoid check that could be removed
     if (file_exists($filetarget)) {
         error_log('Problem deleting. Check your permission ! ' . $filetarget);
     }

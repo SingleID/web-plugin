@@ -85,7 +85,6 @@ function sid_populateData()
 		if (obj.ALREADY_REGISTERED === 1){ 
 			// the user is already present in the DB
 			// PHP has added this var so we haven't to fill a form but we need only to reload the main page !
-			// TODO, if an hacker add this POST value ? nothing of serious will happen IMHO // TO DOUBLE CHECK 2015-02
 			window.top.location.reload();
 			return false;
 		}

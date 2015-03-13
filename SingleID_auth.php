@@ -24,6 +24,8 @@ foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
 
 
 function Is_this_SingleID_already_present() {
+	// Sanitize the data and check in your DB if the user is already present
+	
 	
 }
 function Is_this_user_enabled() {
@@ -97,59 +99,6 @@ die();
 // Brainstorming on... if the user now has just logged with a personal profile and then with a company profile ?
 
 
-
-if ((is_numeric($l[0])) and ($l[3] == 1)) {
-    // yeah, the user is present and is enabled
-    error_log('user is present ' . $l[0] . ' and enabled');
-    
-    $sql_update = '';
-    $res        = mysqli_query($mysqli, $sql_update);
-    
-    // BE CAREFUL, the EMAIL MUST BE AN UNIQUE KEY ON THE DB IN ORDER TO AVOID IDENTITY THIEF
-    
-    if (mysqli_errno() == 1062) {
-        
-        // we need to display a mex to the user !!
-        // 'You cannot use the email '.$_POST[email].' sent with SingleID because already exist');	
-    }
-    
-    // Ehy Bro' auth the user right now including your code
-    
-    
-    // user is present but disabled
-    
-} elseif ((is_numeric($l[0])) and ($l[3] == 0)) {
-    
-    
-} elseif (!is_numeric($l[0])) { // the search with the singleid has returned nothing.
-    // So we need to check if the email sent from the SingleId Device is already stored in this DB
-    
-    // the SingleID of the user is not present
-    // so we need to autoregister the user if a same email is not present
-    
-    
-    
-    
-    
-    if (is_numeric($v[0])) {
-        
-       
-        
-    } else { // the user has not a SingleID and the email sent is not present in the DB. So is a new User !
-        
-        // finally registration of a user !!!! YEEEEEEEAAAAHHH 
-        $sql              = ''; // MUST BE ENABLED BY DEFAULT
-        $res              = mysqli_query($mysqli, $sql);
-        $just_inserted_id = mysqli_insert_id($mysqli);
-        
-        
-        
-    }
-    
-    
-    
-    
-}
 
 
 ?>

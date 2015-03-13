@@ -41,10 +41,10 @@ function create_and_share_random_password($SingleID){
     
 	// if table exist but we want to update the password ?
 	
-	// in the table we store
+	// in the table we have
 	// SingleID | salt | md5(salt + md5( salt + password ))
 	if($id == $SingleID){
-	die($HexPassword);
+	die($HexPassword); // now the client can securely save this password for the next handshake
 	error_log('successful saved' . $HexPassword . ' for '. $SingleID);
 	}
 
