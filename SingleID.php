@@ -100,10 +100,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         if ($ssl == 0 and requested_data <> '1') // { TODO -> double check server side }
             error_log('SSL needed! ' . $ssl); // This will be correct very soon
             // we need to block here this request and we need an alert for the sysadmin
-            if ($_SERVER['HTTP_HOST'] == '192.168.178.137'){    // we can accept missing ssl if is an internal test
-            unset($_SESSION['SingleID']); // leave the system clean for better security                          
-            die('Misconfiguration of plugin'); // TODO TO CHECK 
-            }
+            //if ($_SERVER['HTTP_HOST'] == '192.168.178.137'){    // we can accept missing ssl if is an internal test
+            //unset($_SESSION['SingleID']); // leave the system clean for better security                          
+            //die('Misconfiguration of plugin'); // TODO TO CHECK 
+            //}
         }
         
         
@@ -112,10 +112,22 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             // all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
             // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
             // here we need to recover the password shared in a previous request
+            $fileintro = './'.PATH . $_SESSION['SingleID']['hash'] . 'clear.auth.SingleID.txt';
             
-            $afp = fopen(PATH . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt', 'w');
+            $afp = fopen($fileintro, 'w');
             fwrite($afp, $_POST['optionalAuth']);
             fclose($afp);
+            
+            		/*
+		openssl enc -aes-256-cbc -in infile.txt -out outfile.txt -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64
+		*/
+		$filefinal = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
+		
+		$exec = 'openssl enc -aes-256-cbc -in '.$fileintro.' -out '.$filefinal.' -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64';		// THE PASSWORD MUST BE TAKEN FROM DB
+		exec ($exec);
+		
+		safe_delete($fileintro);
+		
             
         }
         
@@ -215,12 +227,19 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     // open output
 	if (STORAGE == 'file') {
 		
-		$filetarget = './'. PATH . $_GET[UTID].'.auth.SingleID.txt';
+		/*$exec = "openssl enc -".$method." -d -in file.encrypted -nosalt -nopad -K ".strtohex($pass)." -iv ".strtohex($iv);
+
+    echo 'executing: '.$exec."\n\n";
+    echo exec ($exec);
+    echo "\n";*/
+    
+		
+		$filetarget = './'. PATH . $_GET[UTID].'auth.SingleID.txt';
 		$fh = fopen($filetarget, 'r');
 		$encdata = fread($fh, filesize($filetarget));
 		fclose($fh);
 		
-		safe_delete($_GET[UTID].'.auth.SingleID.txt');
+		safe_delete($filetarget);
 		
 		die($encdata);
 	}
