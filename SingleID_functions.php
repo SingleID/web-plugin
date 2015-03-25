@@ -8,12 +8,11 @@ function create_a_mysql_table(){
 
 CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
   `SingleID` char(8) NOT NULL,
-  `salt` char(24) NOT NULL,
-  `hashed` char(32) NOT NULL,
+  `clear-text-password` char(32) NOT NULL COMMENT 'it''s only to prevent reading from the SingleID Server',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `shared-with` varchar(50) NOT NULL,
   UNIQUE KEY `SingleID` (`SingleID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
 
 */
 
@@ -21,21 +20,25 @@ CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
 
 function create_and_share_random_password($SingleID){
 	
+	
+	// first delete all
+	global $db;
+    $db->where ("SingleID",$SingleID);
+    $db->delete ('SingleID_Tokens');
+    
+    
+    $ip = gimme_visitor_ip();
 	// if table doesn't exist ?
 	
-	
-	$Bytes = openssl_random_pseudo_bytes(12, $cstrong);
-	$Salt = bin2hex($Bytes);
 	
 	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$HexPassword = bin2hex($Bytes);
 	
-	global $db;
 
     $data = Array(
         'SingleID' => $SingleID,
-        'salt' => $Salt,
-        'hashed' => md5($Salt.md5($Salt.$HexPassword))
+        'clear-text-password' => $HexPassword,
+        'shared-with' => $ip
 		);
     $id = $db->insert ('SingleID_Tokens', $data);
     
@@ -132,8 +135,8 @@ $label['en']['1,2,3'] 		= 'Login with your SingleID';
 $label['en']['1,2,3,4'] 	= 'Login with your SingleID';
 $label['en']['1,-2,3'] 		= 'Login with your SingleID';
 $label['en']['1,-2,3,4'] 	= 'Login with your SingleID';
-$label['en']['5'] 			= 'Identify with SingleID';
-$label['en']['6'] 			= 'Confirm with SingleID';
+$label['en']['1,4,5'] 			= 'Identify with SingleID';
+$label['en']['1,4,6'] 			= 'Confirm with SingleID';
 	
 	
 	return '

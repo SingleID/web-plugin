@@ -112,21 +112,46 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             // all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
             // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
             // here we need to recover the password shared in a previous request
+        /*
             $fileintro = './'.PATH . $_SESSION['SingleID']['hash'] . 'clear.auth.SingleID.txt';
             
             $afp = fopen($fileintro, 'w');
             fwrite($afp, $_POST['optionalAuth']);
             fclose($afp);
             
-            		/*
-		openssl enc -aes-256-cbc -in infile.txt -out outfile.txt -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64
-		*/
+        
+		// openssl enc -aes-256-cbc -in infile.txt -out outfile.txt -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64
+		
 		$filefinal = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
 		
 		$exec = 'openssl enc -aes-256-cbc -in '.$fileintro.' -out '.$filefinal.' -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64';		// THE PASSWORD MUST BE TAKEN FROM DB
 		exec ($exec);
 		
 		safe_delete($fileintro);
+		*/
+		
+		
+		require('Crypt/GibberishAES.php');
+
+
+		$old_key_size = GibberishAES::size();
+		GibberishAES::size(256);    // Also 192, 128
+		$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $Pass); // THE PASSWORD MUST BE TAKEN FROM DB
+																					 // The password is stored in clear into the DB because is required only to hide potential sensitive information SingleID Servers
+
+		$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
+					
+		$afp = fopen($fileoutput, 'w');
+		fwrite($afp, $encrypted_secret_string);
+		fclose($afp);
+		
+		
+		
+		
+		
+		
+		
+		
 		
             
         }
@@ -207,7 +232,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         fclose($fp);
     }
     
-    if (requested_data == '5'){ // TODO in April 2015
+    
+    // This step overwrite any previous value founded into DB
+    if (requested_data == '1,4,5'){ // TODO in April 2015
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		create_and_share_random_password($_SESSION['SingleID']['who']); // ERROR HERE ! We need an update app side ! TODO TOFIX ASAP
 	}
