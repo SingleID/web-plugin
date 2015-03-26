@@ -84,9 +84,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	}
     
     
-    $_SESSION['SingleID']['hash'] = md5(mt_rand(1, mt_getrandmax()) . microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
+    //$_SESSION['SingleID']['hash'] = md5(mt_rand(1, mt_getrandmax()) . microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
     
-    
+    $Bytes = openssl_random_pseudo_bytes(16, $cstrong); // Better this way and if openssl is not available we must stop.
+	$_SESSION['SingleID']['hash'] = bin2hex($Bytes);
     
     if (is_SingleID($_POST['single_id'])) {
         
@@ -112,23 +113,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             // all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
             // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
             // here we need to recover the password shared in a previous request
-        /*
-            $fileintro = './'.PATH . $_SESSION['SingleID']['hash'] . 'clear.auth.SingleID.txt';
-            
-            $afp = fopen($fileintro, 'w');
-            fwrite($afp, $_POST['optionalAuth']);
-            fclose($afp);
-            
-        
-		// openssl enc -aes-256-cbc -in infile.txt -out outfile.txt -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64
 		
-		$filefinal = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
-		
-		$exec = 'openssl enc -aes-256-cbc -in '.$fileintro.' -out '.$filefinal.' -pass pass:"d41d8cd98f00b204e9800998ecf8427e" -e -base64';		// THE PASSWORD MUST BE TAKEN FROM DB
-		exec ($exec);
-		
-		safe_delete($fileintro);
-		*/
+		$db->where ("SingleID", $_POST['single_id']);
+		$ClearPassword = $db->getValue ("clear-text-password");
 		
 		
 		require('Crypt/GibberishAES.php');
@@ -136,8 +123,11 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 
 		$old_key_size = GibberishAES::size();
 		GibberishAES::size(256);    // Also 192, 128
-		$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $Pass); // THE PASSWORD MUST BE TAKEN FROM DB
-																					 // The password is stored in clear into the DB because is required only to hide potential sensitive information SingleID Servers
+		$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $ClearPassword); // THE PASSWORD MUST BE TAKEN FROM DB
+		
+																					 // The password is stored in clear into the DB because is required only to hide potential sensitive information from SingleID Servers
+																					 // a Malicious user with this password can "only" read the text that is starting from this server
+																					 // a Malicious user with this password could send message to an user, but only if they came from the same server. But if this server has been hacked why, ask the help of the user for doing the malicious transaction ?
 
 		$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
 					

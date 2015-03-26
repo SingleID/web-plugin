@@ -48,7 +48,7 @@ function sid_sendData()
 {
 	var single_id = jQuery('input[name="SingleID"]').val();
 	
-		// we need to create a string with all the field with SingleIDAuth class fix 2015-03-05
+		// we need to create a string with all the field with SingleIDAuth class -> 2015-03-25 -> To put in white-paper
 		var AuthArray = {};
 		
 		$(parent.window.jQuery('.SingleIDAuth')).each(function() {
