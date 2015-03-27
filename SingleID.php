@@ -125,7 +125,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				// here we need to recover the password shared in a previous request
 			
 			$db->where ("SingleID", $_POST['single_id']);
-			$ClearPassword = $db->getValue ("clear-text-password");
+			$ClearPassword = $db->getValue ("clearTextPassword");
 			
 			
 			require('Crypt/GibberishAES.php');
@@ -226,14 +226,18 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     if (requested_data == '1,4,5'){ // TODO in April 2015
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		if (is_SingleID($_POST['SingleID'])){
-			$hex_secret = one_time_share_random_password($_POST['SingleID']); // We need an update app side ! TODO TOFIX ASAP
+			$ip = gimme_visitor_ip();
+			$hex_secret = one_time_share_random_password($_POST['SingleID'], $ip); // We need an update app side ! TODO TOFIX ASAP
 			die($hex_secret);
+		}else{
+			error_log('missing something important right here');
 		}
 	}
     
     die('ok');	// if not died with create_and_share_random_password()
     
 } elseif (isset($_GET['UTID'])) { // TODO in April 2015
+	
 	$_GET=array_map("strip_tags",$_GET);
     // a Device is requiring some encrypted data
     if (!is_md5($_GET['UTID'])) {
