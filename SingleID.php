@@ -84,7 +84,6 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	}
     
     
-    //$_SESSION['SingleID']['hash'] = md5(mt_rand(1, mt_getrandmax()) . microtime() . md5($_SERVER['HTTP_USER_AGENT'] . mt_rand(1, mt_getrandmax())) . $_SERVER['REMOTE_ADDR'] . mt_rand(1, mt_getrandmax())); // a bit of entropy here
     
     $Bytes = openssl_random_pseudo_bytes(16, $cstrong); // Better this way and if openssl is not available we must stop.
 	$_SESSION['SingleID']['hash'] = bin2hex($Bytes);
@@ -108,46 +107,48 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         }
         
         
-        if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
-            // This if will be defined in April
-            // all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
-            // $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
-            // here we need to recover the password shared in a previous request
-		
-		$db->where ("SingleID", $_POST['single_id']);
-		$ClearPassword = $db->getValue ("clear-text-password");
-		
-		
-		require('Crypt/GibberishAES.php');
-
-
-		$old_key_size = GibberishAES::size();
-		GibberishAES::size(256);    // Also 192, 128
-		$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $ClearPassword); // THE PASSWORD MUST BE TAKEN FROM DB
-		
-																					 // The password is stored in clear into the DB because is required only to hide potential sensitive information from SingleID Servers
-																					 // a Malicious user with this password can "only" read the text that is starting from this server
-																					 // a Malicious user with this password could send message to an user, but only if they came from the same server. But if this server has been hacked why, ask the help of the user for doing the malicious transaction ?
-
-		$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
-					
-		$afp = fopen($fileoutput, 'w');
-		fwrite($afp, $encrypted_secret_string);
-		fclose($afp);
-		
-		
-		
-		
-		
-		
-		
-		
-		
-            
-        }
         
+        // sensitive account
+        // TODO OVERWRITE ? ALWAYS for DEFAULT
+        if (requested_data == '1,4,5') {
+			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+			// we need to create a token because this is the first handshake for a sensitive account
+			create_and_store_random_password($_SESSION['SingleID']['who']);
+			// the PHP here is die if the insert is gone right
+		}elseif (requested_data == '1,4,6') {
+			
+			// if requested_data == 1,4,6
+			if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
+				// This if will be defined in April
+				// all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
+				// $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
+				// here we need to recover the password shared in a previous request
+			
+			$db->where ("SingleID", $_POST['single_id']);
+			$ClearPassword = $db->getValue ("clear-text-password");
+			
+			
+			require('Crypt/GibberishAES.php');
+
+
+			$old_key_size = GibberishAES::size();
+			GibberishAES::size(256);    // Also 192, 128
+			$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $ClearPassword); // THE PASSWORD MUST BE TAKEN FROM DB
+			
+																						 // The password is stored in clear into the DB because is required only to hide potential sensitive information from SingleID Servers
+																						 // a Malicious user with this password can "only" read the text that is starting from this server
+																						 // a Malicious user with this password could send message to an user, but only if they came from the same server. But if this server has been hacked why, ask the help of the user for doing the malicious transaction ?
+
+			$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
+						
+			$afp = fopen($fileoutput, 'w');
+			fwrite($afp, $encrypted_secret_string);
+			fclose($afp);
+				
+			}
+		}
         //set POST variables
-        
+        $fields_string = '';
         // url encode ?
         $fields = array(
             'SingleID' 			=> $_POST['single_id'], // the value typed in the button ( 8 hex char string )
@@ -169,7 +170,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 
         $ServerReply = send_request_to_singleid_server($fields,$fields_string);
         
-        
+        error_log('ooooppppssss'.serialize($ServerReply));
         
         if ($ServerReply['Reply'] <> 'ok') {
             error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
@@ -179,9 +180,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         $_SESSION['SingleID']['counter'] = 0;
         die('100'); // js will use this code for refresh
         
-    //} else {
-    //    die('Invalid SingleID');
-    //}
+
     
     
 } elseif (isset($_POST['UTID'])) {
@@ -226,7 +225,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     // This step overwrite any previous value founded into DB
     if (requested_data == '1,4,5'){ // TODO in April 2015
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-		create_and_share_random_password($_SESSION['SingleID']['who']); // ERROR HERE ! We need an update app side ! TODO TOFIX ASAP
+		if (is_SingleID($_POST['SingleID'])){
+			$hex_secret = one_time_share_random_password($_POST['SingleID']); // We need an update app side ! TODO TOFIX ASAP
+			die($hex_secret);
+		}
 	}
     
     die('ok');	// if not died with create_and_share_random_password()

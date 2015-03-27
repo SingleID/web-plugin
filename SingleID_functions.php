@@ -18,9 +18,32 @@ CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
 
 }
 
-function create_and_share_random_password($SingleID){
+function one_time_share_random_password($SingleID,$ip){
+	global $db;
+    
+     $data = Array(
+        'shared-with' => $ip
+    );
+    $db->where ('SingleID', $SingleID);
+    $db->update ('SingleID_Tokens', $data);
+    
+    // after writing the ip we will retrieve the password!
+    
+    
+    
+    $db->where ('SingleID',$SingleID);
+    $plainhex = $db->getOne ('clear-text-password');
+    
+    
+    
+    
+    return $plainhex;
+}
+
+function create_and_store_random_password($SingleID){
 	
-	
+	// TODO think to binding this release to an ip?
+	// maybe with the immediately next test transaction ?
 	// first delete all
 	global $db;
     $db->where ("SingleID",$SingleID);
@@ -37,18 +60,18 @@ function create_and_share_random_password($SingleID){
 
     $data = Array(
         'SingleID' => $SingleID,
-        'clear-text-password' => $HexPassword,
-        'shared-with' => $ip
+        'clear-text-password' => $HexPassword
 		);
     $id = $db->insert ('SingleID_Tokens', $data);
     
 	// if table exist but we want to update the password ?
 	
 	// in the table we have
-	// SingleID | salt | md5(salt + md5( salt + password ))
 	if($id == $SingleID){
-	die($HexPassword); // now the client can securely save this password for the next handshake
-	error_log('successful saved' . $HexPassword . ' for '. $SingleID);
+	// die($HexPassword); // now the client can securely save this password for the next handshake
+		error_log('successful saved ' . $HexPassword . ' for '. $SingleID);
+	}else{
+		error_log('wtf happpened?');
 	}
 
 }
@@ -135,8 +158,8 @@ $label['en']['1,2,3'] 		= 'Login with your SingleID';
 $label['en']['1,2,3,4'] 	= 'Login with your SingleID';
 $label['en']['1,-2,3'] 		= 'Login with your SingleID';
 $label['en']['1,-2,3,4'] 	= 'Login with your SingleID';
-$label['en']['1,4,5'] 			= 'Identify with SingleID';
-$label['en']['1,4,6'] 			= 'Confirm with SingleID';
+$label['en']['1,4,5'] 		= 'Identify with SingleID';
+$label['en']['1,4,6'] 		= 'Confirm with SingleID';
 	
 	
 	return '
