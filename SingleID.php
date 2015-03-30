@@ -116,7 +116,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			create_and_store_random_password($_SESSION['SingleID']['who']);
 			// the PHP here is die if the insert is gone right
 		}elseif (requested_data == '1,4,6') {
-			
+			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// if requested_data == 1,4,6
 			if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
 				// This if will be defined in April
@@ -125,10 +125,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				// here we need to recover the password shared in a previous request
 			
 			$db->where ("SingleID", $_POST['single_id']);
-			$ClearPassword = $db->getValue ("clearTextPassword");
+			$ClearPassword = $db->getValue ('SingleID_Tokens', 'clearTextPassword');
+			error_log('yuhuuu: '.$ClearPassword);
 			
-			
-			require('Crypt/GibberishAES.php');
+			require('GibberishAES.php');
 
 
 			$old_key_size = GibberishAES::size();
@@ -139,7 +139,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 																						 // a Malicious user with this password can "only" read the text that is starting from this server
 																						 // a Malicious user with this password could send message to an user, but only if they came from the same server. But if this server has been hacked why, ask the help of the user for doing the malicious transaction ?
 
-			$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . 'auth.SingleID.txt';
+			$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt';
 						
 			$afp = fopen($fileoutput, 'w');
 			fwrite($afp, $encrypted_secret_string);
@@ -294,7 +294,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     if (isset($data['ALREADY_REGISTERED'])){
 		// how is possible ?
 		unset($_SESSION['SingleID']); // leave the system clean
-        die('Wrong 255');
+        die('Wrong 297');
 	}
     // if (isset($data['Refresh_Page'])){
 	//	// how is possible ?
@@ -304,41 +304,46 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	if (isset($data['Bypass_Auth'])){
 		// how is possible ?
 		unset($_SESSION['SingleID']); // leave the system clean
-        die('Wrong 265');
+        die('Wrong 307');
 	}
     
     
-    // MANUAL SET
-    $data['ALREADY_REGISTERED'] = 0; // if set to 1 the JS will not try to populate a form
-    //$data['Refresh_Page']       = 0; // remove refresh
-    $data['Bypass_Auth']        = 1; // if set to 1 the php code with the query will not be executed
     
+				// MANUAL SET
+				if (requested_data == '1,4,6'){ // TODO which check ?
+				error_log('debug here 1,4,6');
+				$data['ALREADY_REGISTERED'] = 1; // force the refresh via js
+				$data['Refresh_Page']		= 0; // remove refresh
+				$data['Bypass_Auth']		= 0; // do not exec code for auth
+				$_SESSION['good'] 			= true; // temp code for form #6
+				print json_encode($data);
+				die();
+				}else{
+				error_log('debug here bbb');
+					// MANUAL SET
+					$data['ALREADY_REGISTERED'] = 0; // if set to 1 the JS will not try to populate a form
+					//$data['Refresh_Page']       = 0; // remove refresh
+					$data['Bypass_Auth']        = 1; // if set to 1 the php code with the query will not be executed
+				}
     
     if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
 			// here is the crucial point
 			// a device has sent the data to the iframe so we can do a lot of thing
 			// the flow should be the following
 			
-			
+			error_log('debug here ccc');
 			// is this SingleID already present in my user table ?
 	
 	
 			require('SingleID_auth.php');
 			
 			if (Is_this_SingleID_already_present() == true){
-				if (requested_data == 6){
-						
-				}
+				
+					error_log('debug here 1,4,6');
+					
+				if (Is_this_user_enabled() == true){
 					
 					
-				if(Is_this_user_enabled() == true){
-					
-					
-					/*if (requested_data == 5){ // --> inside update user data !
-						$db = new Mysqlidb ('localhost', 'root', '', 'testdb');
-						create_and_share_random_password($SingleID)
-						* NOT HERE !
-					}*/
 					update_the_user_data();
 					user_is_logged();
 				

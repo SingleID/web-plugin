@@ -69,7 +69,7 @@ function create_and_store_random_password($SingleID){
 	// die($HexPassword); // now the client can securely save this password for the next handshake
 		error_log('successful saved ' . $HexPassword . ' for '. $SingleID);
 	}else{
-		error_log('wtf happpened?');
+		error_log('wtf happened?');
 	}
 
 }
