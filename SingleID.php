@@ -311,15 +311,17 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
 				// MANUAL SET
 				if (requested_data == '1,4,6'){ // TODO which check ?
-				error_log('debug here 1,4,6');
-				$data['ALREADY_REGISTERED'] = 1; // force the refresh via js
-				$data['Refresh_Page']		= 0; // remove refresh
-				$data['Bypass_Auth']		= 0; // do not exec code for auth
-				$_SESSION['good'] 			= true; // temp code for form #6
-				print json_encode($data);
-				die();
+					// error_log('debug here 1,4,6');
+					$data['ALREADY_REGISTERED'] = 1; // force the refresh via js
+					$data['Refresh_Page']		= 0; // remove refresh
+					$data['Bypass_Auth']		= 0; // do not exec code for auth
+					$_SESSION['good'] 			= true; // temp code for form #6
+					print json_encode($data);
+					die();
+				
 				}else{
-				error_log('debug here bbb');
+					
+				//error_log('debug here bbb');
 					// MANUAL SET
 					$data['ALREADY_REGISTERED'] = 0; // if set to 1 the JS will not try to populate a form
 					//$data['Refresh_Page']       = 0; // remove refresh
@@ -331,7 +333,6 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			// a device has sent the data to the iframe so we can do a lot of thing
 			// the flow should be the following
 			
-			error_log('debug here ccc');
 			// is this SingleID already present in my user table ?
 	
 	

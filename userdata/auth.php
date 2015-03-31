@@ -27,9 +27,8 @@ if (is_md5($_GET[UTID])){
 
 
 
-function is_md5($val)
-{
-				return (bool) preg_match("/[0-9a-f]{32}$/i", $val);
+function is_md5($val){
+	return (bool) preg_match("/[0-9a-f]{32}$/i", $val);
 }
 
 
