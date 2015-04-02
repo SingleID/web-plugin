@@ -170,7 +170,6 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 
         $ServerReply = send_request_to_singleid_server($fields,$fields_string);
         
-        error_log('ooooppppssss'.serialize($ServerReply));
         
         if ($ServerReply['Reply'] <> 'ok') {
             error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
@@ -230,23 +229,32 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// we need to create a token because this is the first handshake for a sensitive account
-			$hex_secret = create_and_store_random_password($_SESSION['SingleID']['who']);
-			// the PHP here is die if the insert is gone right
+			$hex_secret = create_and_store_random_password($_POST['SingleID']);
 			
-			$hex_secret_hashed = one_time_share_random_password($_POST['SingleID'], $ip); // We need an update app side ! TODO TOFIX ASAP
+			// $hex_secret_hashed = one_time_share_random_password($_POST['SingleID'], $ip); // almost useless... ( only to write the ip )
 			die($hex_secret);
 		}else{
 			error_log('missing something important right here');
 		}
 	}
     
-    die('ok');	// if not died with create_and_share_random_password()
+    die('ok');	// if not died with create_and_store_random_password
     
-} elseif (isset($_GET['UTID'])) { // TODO in April 2015
+} elseif (isset($_POST['gimmedetails'])) { // TODO in April 2015
 	
-	$_GET=array_map("strip_tags",$_GET);
+	/*
+	gimmedetails
+	UTID
+	SharedSecret
+	SingleID
+	checksum(md5(UTID.SharedSecret.SingleID))
+	*/
+	
+	
+	// $_GET=array_map("strip_tags",$_GET);
     // a Device is requiring some encrypted data
-    if (!is_md5($_GET['UTID'])) {
+    
+    if (!is_md5($_POST['UTID'])) {
 		unset($_SESSION['SingleID']); // leave the system clean for better security
         die('Wrong data received!');
     }
@@ -255,17 +263,34 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     // open output
 	if (STORAGE == 'file') {
-
-    
 		
-		$filetarget = './'. PATH . $_GET[UTID].'auth.SingleID.txt';
+		require('GibberishAES.php');
+		
+		// decrypt the data with the server key
+		$filetarget = './'. PATH . $_POST[UTID].'.auth.SingleID.txt';
 		$fh = fopen($filetarget, 'r');
 		$encdata = fread($fh, filesize($filetarget));
 		fclose($fh);
 		
 		safe_delete($filetarget);
 		
-		die($encdata);
+		$decrypted_data = GibberishAES::dec($encdata, $PWD_TEMP_FILES);
+		
+		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+		$db->where ("SingleID", $_POST['SingleID']);
+		$hashed_token = $db->getValue ('SingleID_Tokens', 'hashedThirdFactor');
+		//re-encrypt the data with the client key if the hash is correct !
+		if (password_verify($_POST['CommonSecret'], $hashed_token)) {
+			
+			// $old_key_size = GibberishAES::size();
+			GibberishAES::size(256);    // Also 192, 128
+			$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['CommonSecret']);
+		
+			die($encrypted_secret_string); // the device has the password to decrypt this
+		
+		} else {
+			die('ko');
+		}
 	}
     
     

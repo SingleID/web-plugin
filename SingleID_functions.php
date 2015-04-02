@@ -8,7 +8,7 @@ function create_a_mysql_table(){
 
 CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
   `SingleID` char(8) NOT NULL,
-  `clearTextPassword` char(32) NOT NULL COMMENT 'it''s only to prevent reading from the SingleID Server',
+  `hashedThirdFactor` char(32) NOT NULL COMMENT 'it''s only to prevent reading from the SingleID Server',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `shared-with` varchar(50) NOT NULL,
   UNIQUE KEY `SingleID` (`SingleID`)
@@ -18,21 +18,7 @@ CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
 
 }
 
-function one_time_share_random_password($SingleID,$ip){
-	global $db;
-    
-     $data = Array(
-        'shared-with' => $ip
-    );
-    $db->where ('SingleID', $SingleID);
-    $db->update ('SingleID_Tokens', $data);
-    
-    // after writing the ip we will retrieve the password!
-        
 
-    
-    //return $plainhex;
-}
 
 function create_and_store_random_password($SingleID){
 	
@@ -54,7 +40,8 @@ function create_and_store_random_password($SingleID){
 
     $data = Array(
         'SingleID' => $SingleID,
-        'hashedThirdFactor' => $hashed_third_factor
+        'hashedThirdFactor' => $hashed_third_factor,
+        'shared-with' => $ip
 		);
     $id = $db->insert ('SingleID_Tokens', $data);
     

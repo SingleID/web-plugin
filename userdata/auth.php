@@ -1,4 +1,5 @@
 <?php
+die('no more');
 header("Access-Control-Allow-Origin: *");
 
 if (is_md5($_GET[UTID])){
