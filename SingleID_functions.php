@@ -30,12 +30,8 @@ function one_time_share_random_password($SingleID,$ip){
     // after writing the ip we will retrieve the password!
         
 
-    $db->where ('SingleID',$SingleID);
-    $plainhex = $db->getValue ('SingleID_Tokens', 'clearTextPassword');
     
-    
-    
-    return $plainhex;
+    //return $plainhex;
 }
 
 function create_and_store_random_password($SingleID){
@@ -49,16 +45,16 @@ function create_and_store_random_password($SingleID){
     
     
     $ip = gimme_visitor_ip();
-	// if table doesn't exist ?
 	
 	
 	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$HexPassword = bin2hex($Bytes);
 	
+	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, ["cost" => 11]);
 
     $data = Array(
         'SingleID' => $SingleID,
-        'clearTextPassword' => $HexPassword
+        'hashedThirdFactor' => $hashed_third_factor
 		);
     $id = $db->insert ('SingleID_Tokens', $data);
     
@@ -67,11 +63,12 @@ function create_and_store_random_password($SingleID){
 	// in the table we have
 	if($id == $SingleID){
 	// die($HexPassword); // now the client can securely save this password for the next handshake
-		error_log('successful saved ' . $HexPassword . ' for '. $SingleID);
+		error_log('successful saved hash ' . $hashed_third_factor . ' for '. $SingleID);
 	}else{
 		error_log('wtf happened?');
 	}
 
+	return $HexPassword;
 }
 
 

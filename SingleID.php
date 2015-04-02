@@ -85,7 +85,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     
-    $Bytes = openssl_random_pseudo_bytes(16, $cstrong); // Better this way and if openssl is not available we must stop.
+    $Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$_SESSION['SingleID']['hash'] = bin2hex($Bytes);
     
     if (is_SingleID($_POST['single_id'])) {
@@ -110,12 +110,16 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         
         // sensitive account
         // TODO OVERWRITE ? ALWAYS for DEFAULT
+        /*
         if (requested_data == '1,4,5') {
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// we need to create a token because this is the first handshake for a sensitive account
 			create_and_store_random_password($_SESSION['SingleID']['who']);
 			// the PHP here is die if the insert is gone right
-		}elseif (requested_data == '1,4,6') {
+		}else
+		*/
+		
+		if (requested_data == '1,4,6') {
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// if requested_data == 1,4,6
 			if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
@@ -124,20 +128,16 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				// $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
 				// here we need to recover the password shared in a previous request
 			
-			$db->where ("SingleID", $_POST['single_id']);
-			$ClearPassword = $db->getValue ('SingleID_Tokens', 'clearTextPassword');
-			error_log('yuhuuu: '.$ClearPassword);
+			//$db->where ("SingleID", $_POST['single_id']);
+			//$ClearPassword = $db->getValue ('SingleID_Tokens', 'clearTextPassword');
+			//error_log('yuhuuu: '.$ClearPassword);
 			
 			require('GibberishAES.php');
 
 
-			$old_key_size = GibberishAES::size();
+			// $old_key_size = GibberishAES::size();
 			GibberishAES::size(256);    // Also 192, 128
-			$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $ClearPassword); // THE PASSWORD MUST BE TAKEN FROM DB
-			
-																						 // The password is stored in clear into the DB because is required only to hide potential sensitive information from SingleID Servers
-																						 // a Malicious user with this password can "only" read the text that is starting from this server
-																						 // a Malicious user with this password could send message to an user, but only if they came from the same server. But if this server has been hacked why, ask the help of the user for doing the malicious transaction ?
+			$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $PWD_TEMP_FILES);
 
 			$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt';
 						
@@ -227,7 +227,13 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		if (is_SingleID($_POST['SingleID'])){
 			$ip = gimme_visitor_ip();
-			$hex_secret = one_time_share_random_password($_POST['SingleID'], $ip); // We need an update app side ! TODO TOFIX ASAP
+			
+			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+			// we need to create a token because this is the first handshake for a sensitive account
+			$hex_secret = create_and_store_random_password($_SESSION['SingleID']['who']);
+			// the PHP here is die if the insert is gone right
+			
+			$hex_secret_hashed = one_time_share_random_password($_POST['SingleID'], $ip); // We need an update app side ! TODO TOFIX ASAP
 			die($hex_secret);
 		}else{
 			error_log('missing something important right here');
@@ -249,12 +255,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     // open output
 	if (STORAGE == 'file') {
-		
-		/*$exec = "openssl enc -".$method." -d -in file.encrypted -nosalt -nopad -K ".strtohex($pass)." -iv ".strtohex($iv);
 
-    echo 'executing: '.$exec."\n\n";
-    echo exec ($exec);
-    echo "\n";*/
     
 		
 		$filetarget = './'. PATH . $_GET[UTID].'auth.SingleID.txt';
