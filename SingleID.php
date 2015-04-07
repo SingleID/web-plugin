@@ -180,9 +180,54 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         die('100'); // js will use this code for refresh
         
 
+} elseif (isset($_POST['gimmedetails'])) { // TODO in April 2015
+	
+
+	
+    // a Device is asking info a about the auth prog
+    
+    if (!is_md5($_POST['UTID'])) {
+		unset($_SESSION['SingleID']); // leave the system clean for better security
+        die('Wrong data received!');
+    }
     
     
-} elseif (isset($_POST['UTID'])) {
+    
+    // open output
+	if (STORAGE == 'file') {
+		
+		require('GibberishAES.php');
+		
+		// decrypt the data with the server key
+		$filetarget = './'. PATH . $_POST[UTID].'.auth.SingleID.txt';
+		$fh = fopen($filetarget, 'r');
+		$encdata = fread($fh, filesize($filetarget));
+		fclose($fh);
+		
+		safe_delete($filetarget); // if i delete the files now... how can i check the md5 of the decrypted text ?
+		
+		$decrypted_data = GibberishAES::dec($encdata, $PWD_TEMP_FILES);
+		
+		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+		$db->where ("SingleID", $_POST['SingleID']);
+		$hashed_token = $db->getValue ('SingleID_Tokens', 'hashedThirdFactor');
+		//re-encrypt the data with the client key if the hash is correct !
+		if (password_verify($_POST['SharedSecret'], $hashed_token)) {
+			
+			// $old_key_size = GibberishAES::size();
+			GibberishAES::size(256);    // Also 192, 128
+			$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
+		
+			die($encrypted_secret_string); // the device has the password to decrypt this
+		
+		} else {
+			die('ko');
+		}
+	}
+    
+        
+    
+} elseif (isset($_POST['UTID'])) { // necessariamente dopo gimmedetails
     $_POST=array_map("strip_tags",$_POST);
     // an app has sent something
     if (!is_md5($_POST['UTID'])) {
@@ -190,7 +235,10 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         die('Wrong data received!');
     }
     
-    
+    if (isset($_POST['unc_hash'])){
+		// this is the only proof that the client has decrypted the text correctly....
+		// 
+	}
     
     
     if ($_POST['Ecom_payment_mode'] != 'paypal') { // WTF ? remove or optimize
@@ -206,15 +254,15 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             while (false !== ($file = readdir($handle))) {
                 if ((time() - filectime(PATH . $file)) >= 180) {
                     if (preg_match('/\.SingleID.txt$/i', $file)) {
-                        
-                        safe_delete($file);
+                        error_log('vorrei cancellare: '.$file);
+                        safe_delete('userdata/'.$file);
                     }
                 }
             }
         }
         
         // so we need the store the received data
-        $data = base64_encode(gzcompress(serialize($_POST), 9)); // we compress only to avoid some research with grep from script kiddies like you :-P
+        $data = base64_encode(gzcompress(serialize($_POST), 9)); // we compress only to avoid some research with grep from script kiddies like you
         $fp   = fopen(PATH . $_POST['UTID'] . '.SingleID.txt', 'w');
         fwrite($fp, $data);
         fclose($fp);
@@ -240,60 +288,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     die('ok');	// if not died with create_and_store_random_password
     
-} elseif (isset($_POST['gimmedetails'])) { // TODO in April 2015
-	
-	/*
-	gimmedetails
-	UTID
-	SharedSecret
-	SingleID
-	checksum(md5(UTID.SharedSecret.SingleID))
-	*/
-	
-	
-	// $_GET=array_map("strip_tags",$_GET);
-    // a Device is requiring some encrypted data
-    
-    if (!is_md5($_POST['UTID'])) {
-		unset($_SESSION['SingleID']); // leave the system clean for better security
-        die('Wrong data received!');
-    }
-    
-    
-    
-    // open output
-	if (STORAGE == 'file') {
-		
-		require('GibberishAES.php');
-		
-		// decrypt the data with the server key
-		$filetarget = './'. PATH . $_POST[UTID].'.auth.SingleID.txt';
-		$fh = fopen($filetarget, 'r');
-		$encdata = fread($fh, filesize($filetarget));
-		fclose($fh);
-		
-		safe_delete($filetarget);
-		
-		$decrypted_data = GibberishAES::dec($encdata, $PWD_TEMP_FILES);
-		
-		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-		$db->where ("SingleID", $_POST['SingleID']);
-		$hashed_token = $db->getValue ('SingleID_Tokens', 'hashedThirdFactor');
-		//re-encrypt the data with the client key if the hash is correct !
-		if (password_verify($_POST['CommonSecret'], $hashed_token)) {
-			
-			// $old_key_size = GibberishAES::size();
-			GibberishAES::size(256);    // Also 192, 128
-			$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['CommonSecret']);
-		
-			die($encrypted_secret_string); // the device has the password to decrypt this
-		
-		} else {
-			die('ko');
-		}
-	}
-    
-    
+
 } elseif ($_REQUEST['op'] == 'getdata') {	// the js from desktop browser is checking for data (if the device has already replied)
     
     if (!is_md5($_SESSION['SingleID']['hash'])) {
@@ -320,7 +315,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     if (isset($data['ALREADY_REGISTERED'])){
 		// how is possible ?
 		unset($_SESSION['SingleID']); // leave the system clean
-        die('Wrong 297');
+        die('Wrong 318');
 	}
     // if (isset($data['Refresh_Page'])){
 	//	// how is possible ?

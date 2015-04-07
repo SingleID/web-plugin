@@ -22,7 +22,7 @@ upon it until this notice has been removed. (Which should be soon!)
 
 define("LOGO_URL", 'http://www.singleid.com/img/money-icon.png');
 define("SITE_NAME", 'Device Auth');
-define("requested_data", '1,4,5');
+define("requested_data", '1,4,6');
 define("billing_key", 'aba5399b8d4b172b3abec582743a9b637ac94e5ca19ea4dcb090ad0059598444'); 		// You have to request this key from www.singleid.com if requested_data is different from "1"
 define("admin_contact", ''); 	// You have to set this field only if requested_data is different from "1"
 define("STORAGE",'file');		// use files for temporary storage ( memcache or mysql will be included soon )
@@ -31,10 +31,10 @@ define("LANGUAGE",'en');
 define("PATH",'userdata/');
 // if you use Mysql as storage or if you use set "requested_data" to 5 you need also to set the following var
 
-$HOST = 'localhost';
-$USER = 'root';
-$PASS = 'password';
-$DB = 'SingleID_users';
+$HOST 	= 'localhost';
+$USER 	= 'root';
+$PASS 	= 'password';
+$DB 	= 'SingleID_users';
 
 $PWD_TEMP_FILES = md5($_SERVER['SCRIPT_FILENAME'] . ' <--- CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!');
 

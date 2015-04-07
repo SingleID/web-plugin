@@ -117,16 +117,16 @@ function safe_delete($file){
 	// for better privacy we can overwrite them before deleting...
 	// on linux only
 	if (PHP_OS == 'Linux') {
-		$size = filesize(PATH . $file);
+		$size = filesize($file);
 		$src  = fopen('/dev/zero', 'rb'); // if you prefer you could use urandom
-		$dest = fopen(PATH . $file, 'wb');
+		$dest = fopen( $file, 'wb');
 		
 		stream_copy_to_stream($src, $dest, $size);
 		
 		fclose($src);
 		fclose($dest);
 	}
-	unlink(PATH . $file);
+	unlink($file);
 }
 
 
