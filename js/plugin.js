@@ -80,6 +80,7 @@ function sid_populateData()
 {
 	
 	jQuery.post(sid_plugin_url, {op: 'getdata'}, function(d){
+		console.log('TO PARSE: '+d);
 		var obj = jQuery.parseJSON(d);
 		
 		if (obj.ALREADY_REGISTERED === 1){ 

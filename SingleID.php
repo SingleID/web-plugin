@@ -313,20 +313,26 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     if (isset($data['ALREADY_REGISTERED'])){
-		// how is possible ?
+		// how is possible that the value is already SET ?
 		unset($_SESSION['SingleID']); // leave the system clean
         die('Wrong 318');
 	}
+	
+	
     // if (isset($data['Refresh_Page'])){
 	//	// how is possible ?
 	//	unset($_SESSION['SingleID']); // leave the system clean
     //    die('Wrong 260');
 	//}
-	if (isset($data['Bypass_Auth'])){
+	
+	
+	/* unuseless because singleid_parse_profile fill it
+	 * 
+	 * if (isset($data['Bypass_Auth'])){
 		// how is possible ?
 		unset($_SESSION['SingleID']); // leave the system clean
         die('Wrong 307');
-	}
+	}*/
     
     
     
