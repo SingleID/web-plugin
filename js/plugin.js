@@ -11,7 +11,7 @@ var sid_div;
 var sid_domain = document.domain;
 var sid_url = location.origin + location.pathname;
 var sid_plugin_url = sid_url.replace("plugin.js?op=init", "SingleID.php"); 
-console.log(sid_plugin_url);
+console.log('reply to: '+sid_plugin_url);
 var has_answer = 0;
 var singleIDInterval;
 
@@ -53,7 +53,7 @@ function sid_sendData()
 		
 		$(parent.window.jQuery('.SingleIDAuth')).each(function() {
 			AuthArray[$(this).attr('id')] = $(this).val();
-			console.log($(this).attr('id') + ' ' +  $(this).val());
+			//console.log($(this).attr('id') + ' ' +  $(this).val());
 		});
 		var AuthString = JSON.stringify(AuthArray);
 		// console.log(AuthString);
@@ -67,7 +67,7 @@ function sid_sendData()
 			clearInterval(singleIDInterval);
 			jQuery('.singleid_waiting').html(d);
 		}else{
-			singleIDInterval = setInterval(sid_refresh, 1000);
+			singleIDInterval = setInterval(sid_refresh, 1200);
 		}
 		
 		});
@@ -80,7 +80,7 @@ function sid_populateData()
 {
 	
 	jQuery.post(sid_plugin_url, {op: 'getdata'}, function(d){
-		console.log('TO PARSE: '+d);
+		// console.log('TO PARSE: '+d);
 		var obj = jQuery.parseJSON(d);
 		
 		if (obj.ALREADY_REGISTERED === 1){ 

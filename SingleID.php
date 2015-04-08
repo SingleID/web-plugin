@@ -42,6 +42,7 @@ header("Access-Control-Allow-Origin: *");
 
 
 require('SingleID.conf.php'); // the only file that you can edit and that will be no replaced on your next git pull
+require('lib/password.php'); // for php < 5.5 but > 5.3.7
 
 
 
@@ -88,37 +89,42 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     $Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$_SESSION['SingleID']['hash'] = bin2hex($Bytes);
     
-    if (is_SingleID($_POST['single_id'])) {
+        if (!is_SingleID($_POST['single_id'])) {
+			die('Internal miscofinguration');
+		}
         
         $_SESSION['SingleID']['who'] = $_POST['single_id'];
         
         
-        $ssl         = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 1 : 0;
+        
+		if(!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])){
+			$root .= $_SERVER['HTTP_X_FORWARDED_PROTO'].'://'; // needed for cloudflare flexible ssl
+		}else{
+			$root .= !empty($_SERVER['HTTPS']) ? "https://" : "http://";
+		}
+		
+		if ($root == 'https://'){
+			$ssl = 1;
+		}else{
+			$ssl = 0;
+		}
+
+        
         $protocol[1] = 'https';
         $protocol[0] = 'http';
         
-        if ($ssl == 0 and requested_data <> '1') // { TODO -> double check server side }
+        if (($ssl == 0) and (requested_data <> '1')){ // { TODO -> double check server side }
             error_log('SSL needed! ' . $ssl); // This will be correct very soon
-            // we need to block here this request and we need an alert for the sysadmin
-            //if ($_SERVER['HTTP_HOST'] == '192.168.178.137'){    // we can accept missing ssl if is an internal test
-            //unset($_SESSION['SingleID']); // leave the system clean for better security                          
-            //die('Misconfiguration of plugin'); // TODO TO CHECK 
-            //}
+            // die('Misconfiguration:'. $ssl); // TODO TO CHECK 
         }
+	
         
         
         
         // sensitive account
         // TODO OVERWRITE ? ALWAYS for DEFAULT
-        /*
-        if (requested_data == '1,4,5') {
-			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-			// we need to create a token because this is the first handshake for a sensitive account
-			create_and_store_random_password($_SESSION['SingleID']['who']);
-			// the PHP here is die if the insert is gone right
-		}else
-		*/
-		
+        
+
 		if (requested_data == '1,4,6') {
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// if requested_data == 1,4,6
@@ -235,10 +241,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         die('Wrong data received!');
     }
     
-    if (isset($_POST['unc_hash'])){
+   // if (isset($_POST['unc_hash'])){
 		// this is the only proof that the client has decrypted the text correctly....
-		// 
-	}
+	// }
     
     
     if ($_POST['Ecom_payment_mode'] != 'paypal') { // WTF ? remove or optimize
@@ -254,12 +259,13 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             while (false !== ($file = readdir($handle))) {
                 if ((time() - filectime(PATH . $file)) >= 180) {
                     if (preg_match('/\.SingleID.txt$/i', $file)) {
-                        error_log('vorrei cancellare: '.$file);
-                        safe_delete('userdata/'.$file);
+                        //error_log('vorrei cancellare: '.$file);
+                        safe_delete( PATH . $file );
                     }
                 }
             }
         }
+       
         
         // so we need the store the received data
         $data = base64_encode(gzcompress(serialize($_POST), 9)); // we compress only to avoid some research with grep from script kiddies like you
@@ -271,18 +277,18 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     // This step overwrite any previous value founded into DB
     if (requested_data == '1,4,5'){ // TODO in April 2015
-		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+
+
 		if (is_SingleID($_POST['SingleID'])){
-			$ip = gimme_visitor_ip();
 			
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// we need to create a token because this is the first handshake for a sensitive account
 			$hex_secret = create_and_store_random_password($_POST['SingleID']);
 			
-			// $hex_secret_hashed = one_time_share_random_password($_POST['SingleID'], $ip); // almost useless... ( only to write the ip )
+		
 			die($hex_secret);
 		}else{
-			error_log('missing something important right here');
+			error_log('ops... missing something important right here');
 		}
 	}
     

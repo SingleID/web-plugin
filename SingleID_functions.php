@@ -8,7 +8,7 @@ function create_a_mysql_table(){
 
 CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
   `SingleID` char(8) NOT NULL,
-  `hashedThirdFactor` char(32) NOT NULL COMMENT 'it''s only to prevent reading from the SingleID Server',
+  `hashedThirdFactor` char(60) NOT NULL COMMENT 'it''s only to prevent reading from the SingleID Server',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `shared-with` varchar(50) NOT NULL,
   UNIQUE KEY `SingleID` (`SingleID`)
@@ -25,6 +25,8 @@ function create_and_store_random_password($SingleID){
 	// TODO think to binding this release to an ip?
 	// maybe with the immediately next test transaction ?
 	// first delete all
+	
+	
 	global $db;
     $db->where ("SingleID",$SingleID);
     $db->delete ('SingleID_Tokens');
@@ -36,8 +38,10 @@ function create_and_store_random_password($SingleID){
 	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$HexPassword = bin2hex($Bytes);
 	
-	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, ["cost" => 11]);
-
+	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, ["cost" => 12]);
+	
+	
+	
     $data = Array(
         'SingleID' => $SingleID,
         'hashedThirdFactor' => $hashed_third_factor,
@@ -54,7 +58,7 @@ function create_and_store_random_password($SingleID){
 	}else{
 		error_log('wtf happened?');
 	}
-
+	
 	return $HexPassword;
 }
 
