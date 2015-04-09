@@ -38,8 +38,14 @@ function create_and_store_random_password($SingleID){
 	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
 	$HexPassword = bin2hex($Bytes);
 	
-	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, ["cost" => 12]);
 	
+	if (version_compare(phpversion(), '5.3.7', '>=')) {
+	// you're on 5.3.7 or later
+	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, ["cost" => 12]);
+	} else {
+	// you're not
+	$hashed_third_factor = md5($HexPassword);
+	} 
 	
 	
     $data = Array(

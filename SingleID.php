@@ -218,17 +218,43 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		$db->where ("SingleID", $_POST['SingleID']);
 		$hashed_token = $db->getValue ('SingleID_Tokens', 'hashedThirdFactor');
 		//re-encrypt the data with the client key if the hash is correct !
-		if (password_verify($_POST['SharedSecret'], $hashed_token)) {
-			
-			// $old_key_size = GibberishAES::size();
-			GibberishAES::size(256);    // Also 192, 128
-			$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
 		
-			die($encrypted_secret_string); // the device has the password to decrypt this
 		
-		} else {
-			die('ko');
-		}
+		
+		 // 2015-04-02
+		 if (substr($_POST['SharedSecret'],0,4) == '$2y$'){ // è bcrypted
+			 //error_log('1111111');
+				if (password_verify($_POST['SharedSecret'], $hashed_token)) {
+					
+					// $old_key_size = GibberishAES::size();
+					GibberishAES::size(256);    // Also 192, 128
+					$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
+				
+					die($encrypted_secret_string); // the device has the password to decrypt this
+				
+				} else {
+					die('ko');
+				}
+		 } else { // if PHP < 5.3.7 
+			 
+			if ((md5($_POST['SharedSecret']) == $hashed_token)) {
+					
+					// $old_key_size = GibberishAES::size();
+					GibberishAES::size(256);    // Also 192, 128
+					$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
+				
+					die($encrypted_secret_string); // the device has the password to decrypt this
+				
+				} else {
+					die('ko');
+				}
+			 
+		 }
+		
+		
+		
+		
+		
 	}
     
         
