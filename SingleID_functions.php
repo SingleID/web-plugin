@@ -41,8 +41,12 @@ function create_and_store_random_password($SingleID){
 	
 	if (version_compare(phpversion(), '5.3.7', '>=')) {
 	// you're on 5.3.7 or later
-	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, ["cost" => 12]);
+	$options = [
+    'cost' => 12,
+	];
+	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, $options);
 	} else {
+	error_log('You cannot use this PHP version in production!'); // and also in development...
 	// you're not
 	$hashed_third_factor = md5($HexPassword);
 	} 

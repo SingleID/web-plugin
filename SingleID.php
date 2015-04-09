@@ -223,7 +223,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		
 		 // 2015-04-02
 		 if (substr($_POST['SharedSecret'],0,4) == '$2y$'){ // è bcrypted
-			 //error_log('1111111');
+			
 				if (password_verify($_POST['SharedSecret'], $hashed_token)) {
 					
 					// $old_key_size = GibberishAES::size();
@@ -236,7 +236,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 					die('ko');
 				}
 		 } else { // if PHP < 5.3.7 
-			 
+			error_log('PHP version too much old!');
 			if ((md5($_POST['SharedSecret']) == $hashed_token)) {
 					
 					// $old_key_size = GibberishAES::size();
