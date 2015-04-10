@@ -17,10 +17,9 @@ header("Access-Control-Allow-Origin: *");
  * go to the folder that contain your registration / identification form ( example form.php )
  * exec:
  * 
- * git clone https://github.com/SingleID/web-plugin/
+ * git clone https://github.com/SingleID/web-plugin.git
  * cd web-plugin
- * mkdir userdata
- * chmod 0777 userdata -R
+ * chmod 0777 userdata -R  // maybe 707 could be enough ? to do to check
  * 
  * 
  * You must have jQuery on the page that embed this script.
