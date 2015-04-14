@@ -127,7 +127,7 @@ function send_request_to_singleid_server($fields,$fields_string){
 }
 
 
-function safe_delete($file){
+function safe_delete($file){   // TODO fopen(/dev/zero): failed to open stream: Operation not permitted in
 	// for better privacy we can overwrite them before deleting...
 	// on linux only
 	if (PHP_OS == 'Linux') {

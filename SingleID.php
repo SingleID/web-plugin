@@ -47,6 +47,7 @@ require('lib/password.php'); // for php < 5.5 but > 5.3.7
 
 
 // before all
+
 if (STORAGE == 'file') {
     if (!is_writable(PATH)) {
         error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 ' . PATH . ' -R ');
@@ -71,6 +72,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 } elseif ($_REQUEST['op'] == 'send') { // From browser (user has clicked go)
     // here start the request from the website to the SingleID Server
     
+
     if (STORAGE == 'file') {
 		// this step is for extra security. If you really know what are you doing you can remove
 		// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
@@ -96,11 +98,11 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         
         
         
-		if(!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])){
-			$root .= $_SERVER['HTTP_X_FORWARDED_PROTO'].'://'; // needed for cloudflare flexible ssl
-		}else{
-			$root .= !empty($_SERVER['HTTPS']) ? "https://" : "http://";
-		}
+		if(!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])){						// needed for cloudflare flexible ssl
+			$root .= $_SERVER['HTTP_X_FORWARDED_PROTO'].'://'; 				// needed for cloudflare flexible ssl
+		}else{																// needed for cloudflare flexible ssl
+			$root .= !empty($_SERVER['HTTPS']) ? "https://" : "http://";	// needed for cloudflare flexible ssl
+		}																	// needed for cloudflare flexible ssl
 		
 		if ($root == 'https://'){
 			$ssl = 1;
@@ -120,38 +122,25 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         
         
         
-        // sensitive account
-        // TODO OVERWRITE ? ALWAYS for DEFAULT
-        
-
-		if (requested_data == '1,4,6') {
+		if (requested_data == '1,4,6') {  	// sensitive account
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// if requested_data == 1,4,6
 			if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
-				// This if will be defined in April
-				// all what you need to know is that if you want to use requested_data 5 you need also a Mysql DB
-				// $_POST['optionalAuth'] TODO must be encrypted with the third factor key of the user!
-				// here we need to recover the password shared in a previous request
 			
-			//$db->where ("SingleID", $_POST['single_id']);
-			//$ClearPassword = $db->getValue ('SingleID_Tokens', 'clearTextPassword');
-			//error_log('yuhuuu: '.$ClearPassword);
-			
-			require('GibberishAES.php');
+				require('GibberishAES.php');
 
+				GibberishAES::size(256);    // Also 192, 128
+				$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $PWD_TEMP_FILES);
 
-			// $old_key_size = GibberishAES::size();
-			GibberishAES::size(256);    // Also 192, 128
-			$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $PWD_TEMP_FILES);
-
-			$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt';
-						
-			$afp = fopen($fileoutput, 'w');
-			fwrite($afp, $encrypted_secret_string);
-			fclose($afp);
+				$fileoutput = './'. PATH . $_SESSION['SingleID']['hash'] . '.auth.SingleID.txt';
+							
+				$afp = fopen($fileoutput, 'w');
+				fwrite($afp, $encrypted_secret_string);
+				fclose($afp);
 				
 			}
 		}
+		
         //set POST variables
         $fields_string = '';
         // url encode ?
@@ -160,7 +149,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             'UTID' 				=> $_SESSION['SingleID']['hash'], // MUST BE AN MD5 HASH or a 32 hex char string
             'logo_url' 			=> LOGO_URL, // the img that will be displayed on the user device
             'name' 				=> SITE_NAME, // website name
-            'requested_data' 	=> requested_data, // see note 1 below
+            'requested_data' 	=> requested_data,
             'ssl' 				=> $ssl,
             'url_waiting_data' 	=> $protocol[$ssl] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"],
             'ACTION_ID' 		=> 'askfordata'
@@ -177,7 +166,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         
         
         if ($ServerReply['Reply'] <> 'ok') {
-            error_log($ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
+            error_log('Request failed: ' . $ServerReply['PopupTitle'] . ' ' . $ServerReply['Popup']);
             die($ServerReply['PopupTitle']);
         }
         
@@ -185,14 +174,11 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         die('100'); // js will use this code for refresh
         
 
-} elseif (isset($_POST['gimmedetails'])) { // TODO in April 2015
-	
-
+} elseif (isset($_POST['gimmedetails'])) {
 	
     // a Device is asking info a about the auth prog
     
     if (!is_md5($_POST['UTID'])) {
-		unset($_SESSION['SingleID']); // leave the system clean for better security
         die('Wrong data received!');
     }
     
