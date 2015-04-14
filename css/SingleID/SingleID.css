@@ -17,7 +17,7 @@
 
 .singleid_button_wrap {
     float: left;
-    width: 238px !important;
+    width: 168px !important;
     height: 50px !important;
     background: #40d47d !important;
     position: relative !important;
@@ -44,7 +44,6 @@
     height: 42px !important;
     width: 160px !important;
     background: #fff !important;
-    margin-left:35px;
 }
 .singleid_button_wrap .singleid_styled_input {
     background:  #fff;
@@ -114,7 +113,7 @@
     left: 4px !important;
     position: absolute;
     top: 4px !important;
-    width: 230px !important;
+    width: 160px !important;
     z-index: 2 !important;
     color: #fff !important;
     letter-spacing: normal !important;

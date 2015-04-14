@@ -8,13 +8,17 @@ upon it until this notice has been removed. (Which should be soon!)
 
 /*
 
- <option value="1">Personal data only</option>
- <option value="1,2,3">Personal, Billing and Shipping data</option>
- <option value="1,-2,3">Personal, Billing and Shipping data ( Without credit card ) </option>
- <option value="1,2,3,4">Personal, Billing, Shipping and Identification data</option>
- <option value="1,-2,3,4">Personal, Billing ( Without credit card ), Shipping and Identification data</option>
- <option value="1,4,5">All data with a random password as final handshake</option>
- <option value="1,4,6">All data with the previous exchanged random password</option>
+
+	Requirements PHP > 5.3.7
+
+
+<option value="1">Personal data only</option>
+<option value="1,2,3">Personal, Billing and Shipping data</option>
+<option value="1,-2,3">Personal, Billing and Shipping data ( Without credit card ) </option>
+<option value="1,2,3,4">Personal, Billing, Shipping and Identification data</option>
+<option value="1,-2,3,4">Personal, Billing ( Without credit card ), Shipping and Identification data</option>
+<option value="1,4,5">All data with a random password as final handshake</option>
+<option value="1,4,6">All data with the previous exchanged random password</option>
 
 */
  
@@ -31,10 +35,12 @@ define("LANGUAGE",'en');
 define("PATH",'userdata/');
 // if you use Mysql as storage or if you use set "requested_data" to 5 you need also to set the following var
 
-$HOST 	= 'localhost';
-$USER 	= 'root';
-$PASS 	= 'password';
-$DB 	= 'SingleID_users';
+$HOST 				= 'localhost';
+$USER 				= 'root';
+$PASS 				= 'password';
+$DB 				= 'SingleID_users';
+$TABLE_TOKENS  		= 'SingleID_Tokens';
+$TABLE_LOG  		= 'SingleID_log';
 
 $PWD_TEMP_FILES = md5($_SERVER['SCRIPT_FILENAME'] . ' <--- CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!');
 

@@ -26,8 +26,8 @@ foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
 function Is_this_SingleID_already_present() {
 	// Sanitize the data and check in your DB if the user is already present
 	
-	
 }
+
 function Is_this_user_enabled() {
 	
 	// NO

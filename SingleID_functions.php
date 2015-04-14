@@ -14,6 +14,16 @@ CREATE TABLE IF NOT EXISTS `SingleID_Tokens` (
   UNIQUE KEY `SingleID` (`SingleID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
+
+
+CREATE TABLE IF NOT EXISTS `SingleID_log` (
+  `UTID` char(32) NOT NULL,
+  `bcrypted` varchar(60) NOT NULL,
+  `happened_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`UTID`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+* 
+* 
 */
 
 }
@@ -41,15 +51,17 @@ function create_and_store_random_password($SingleID){
 	
 	if (version_compare(phpversion(), '5.3.7', '>=')) {
 	// you're on 5.3.7 or later
-	$options = [
+	$options = Array(
     'cost' => 12,
-	];
-	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT, $options);
+	);
+		$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT,$options);
+
+	
 	} else {
-	error_log('You cannot use this PHP version in production!'); // and also in development...
-	// you're not
-	$hashed_third_factor = md5($HexPassword);
-	} 
+		$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT);
+
+	}
+	
 	
 	
     $data = Array(
@@ -121,18 +133,27 @@ function send_request_to_singleid_server($fields,$fields_string){
 	$result       = curl_exec($ch);
 	$responseInfo = curl_getinfo($ch);
 	$ServerReply  = json_decode($result, true);
-	curl_close($ch); //close connection because we are brave 
+	curl_close($ch); 	//close connection because we are good guys 
 	
 	return $ServerReply;
 }
 
 
-function safe_delete($file){   // TODO fopen(/dev/zero): failed to open stream: Operation not permitted in
-	// for better privacy we can overwrite them before deleting...
+function safe_delete($file){
+	// for better privacy we can try overwrite them before deleting...
 	// on linux only
 	if (PHP_OS == 'Linux') {
+		
+		// it also depends on the filesystem type.... so doing this step could be useless...
+		
 		$size = filesize($file);
-		$src  = fopen('/dev/zero', 'rb'); // if you prefer you could use urandom
+	
+		//try {
+		//$src  = fopen('/dev/zero', 'rb');  // TODO fopen(/dev/zero): failed to open stream: Operation not permitted in
+		//} catch(Exception $e) {
+		$src  = fopen('./userdata/garbage.txt', 'rb');
+		// }
+		
 		$dest = fopen( $file, 'wb');
 		
 		stream_copy_to_stream($src, $dest, $size);
@@ -149,64 +170,64 @@ function safe_delete($file){   // TODO fopen(/dev/zero): failed to open stream: 
 function print_login_button($language = 'en',$requested_data){
 	
 	
-$label['en']['1'] 			= 'Login with your SingleID';
-$label['en']['1,2,3'] 		= 'Login with your SingleID';
-$label['en']['1,2,3,4'] 	= 'Login with your SingleID';
-$label['en']['1,-2,3'] 		= 'Login with your SingleID';
-$label['en']['1,-2,3,4'] 	= 'Login with your SingleID';
-$label['en']['1,4,5'] 		= 'Identify with SingleID';
-$label['en']['1,4,6'] 		= 'Confirm with SingleID';
+$label['en']['1'] 			= 'Login with';
+$label['en']['1,2,3'] 		= 'Login with';
+$label['en']['1,2,3,4'] 	= 'Login with';
+$label['en']['1,-2,3'] 		= 'Login with';
+$label['en']['1,-2,3,4'] 	= 'Login with';
+$label['en']['1,4,5'] 		= 'Identify with';
+$label['en']['1,4,6'] 		= 'Confirm with';
 	
 	
-	return '
-		<!DOCTYPE html>
-	<html>
-		<head>
-			<title>SingleID iframed button</title>
-			<meta charset="utf-8">
-			<link rel="stylesheet" href="css/SingleID/SingleID.css">
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>				
-			<script src="js/plugin.js"></script>
-		</head>
-		<body>
-			<div class="singleid_button_wrap singleid_pointer">
-				<div class="single_text_single_id">'.$label[$language][$requested_data].'</div>
-				<div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling, no more password" /></div>
+return '
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SingleID iframed button</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="css/SingleID/SingleID.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>				
+		<script src="js/plugin.js"></script>
+	</head>
+	<body>
+		<div class="singleid_button_wrap singleid_pointer">
+			<div class="single_text_single_id">'.$label[$language][$requested_data].'</div>
+			<div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling, no more password" /></div>
 
-				<div class="white_back_single_id singleid_invisible">
-					<input class="singleid_styled_input" name="SingleID" type="text" value="" maxlength="8" />
-					<button type="button" class="icon_box_go" onClick="sid_sendData();">go</button>
-				</div>
-				<div class="singleid_waiting singleid_invisible">waiting for data</div>
-				<a href="http://www.singleid.com" target="_top" title="SingleID is available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
-				</a>
+			<div class="white_back_single_id singleid_invisible">
+				<input class="singleid_styled_input" name="SingleID" type="text" value="" maxlength="8" />
+				<button type="button" class="icon_box_go" onClick="sid_sendData();">go</button>
 			</div>
-		   </body>
-		   <script>
-		   $(function() {
+			<div class="singleid_waiting singleid_invisible">waiting for data</div>
+			<a href="http://www.singleid.com" target="_top" title="SingleID is available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
+			</a>
+		</div>
+	   </body>
+	   <script>
+	   $(function() {
 
-				$(".singleid_button_wrap").bind("click", function() {
-					  $(".icon_box_single_id, .icon_box_single_id img").fadeOut(50);
-					  $(".icon_box_single_id").queue(function(next){
-						 $(this).addClass("singleid_invisible");
-					  });
-					  $(".single_text_single_id").queue(function(next){
-						 $(this).addClass("singleid_invisible");
-					  });
-					  $(".white_back_single_id").fadeIn(\'fast\');
-					  $(".icon_box_go").show(\'fast\');
-					  $(".singleid_styled_input").focus();
+			$(".singleid_button_wrap").bind("click", function() {
+				  $(".icon_box_single_id, .icon_box_single_id img").fadeOut(50);
+				  $(".icon_box_single_id").queue(function(next){
+					 $(this).addClass("singleid_invisible");
+				  });
+				  $(".single_text_single_id").queue(function(next){
+					 $(this).addClass("singleid_invisible");
+				  });
+				  $(".white_back_single_id").fadeIn(\'fast\');
+				  $(".icon_box_go").show(\'fast\');
+				  $(".singleid_styled_input").focus();
 
-					  $(".singleid_styled_input").keypress(function(event) {
-						  if (event.keyCode == 13) {
-							  sid_sendData();
-						  }
-					  });
-				});
-
+				  $(".singleid_styled_input").keypress(function(event) {
+					  if (event.keyCode == 13) {
+						  sid_sendData();
+					  }
+				  });
 			});
-			</script>
-	</html>
+
+		});
+		</script>
+</html>
 		';
 }
 
