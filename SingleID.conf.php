@@ -8,8 +8,15 @@ upon it until this notice has been removed. (Which should be soon!)
 
 /*
 
+Requirements for Throw-Away accounts
+PHP >= 5.3.7
+a writable folder
+ 
 
-	Requirements PHP > 5.3.7
+Requirements for Sensitive Accounts
+PHP >= 5.3.7
+Mysql
+
 
 
 <option value="1">Personal data only</option>
@@ -27,23 +34,30 @@ upon it until this notice has been removed. (Which should be soon!)
 define("LOGO_URL", 'http://www.singleid.com/img/money-icon.png');
 define("SITE_NAME", 'Device Auth');
 define("requested_data", '1,4,6');
-define("billing_key", 'aba5399b8d4b172b3abec582743a9b637ac94e5ca19ea4dcb090ad0059598444'); 		// You have to request this key from www.singleid.com if requested_data is different from "1"
-define("admin_contact", ''); 	// You have to set this field only if requested_data is different from "1"
-define("STORAGE",'file');		// use files for temporary storage ( memcache or mysql will be included soon )
-define("ACCEPT",'both');	// which profile we accept (allowed value are personal, business, both )
+define("admin_contact", ''); 		// You have to set this field only if requested_data is different from "1"
+define("STORAGE",'file');			// use files for temporary storage ( memcache or mysql will be included soon )
+define("ACCEPT",'both');			// which profile we accept (allowed value are personal, business, both )
 define("LANGUAGE",'en');
-define("PATH",'userdata/');
-// if you use Mysql as storage or if you use set "requested_data" to 5 you need also to set the following var
+define("PATH",'userdata/');			// Change the default folder for storing temporary files if you can
 
-$HOST 				= 'localhost';
-$USER 				= 'root';
-$PASS 				= 'password';
-$DB 				= 'SingleID_users';
-$TABLE_TOKENS  		= 'SingleID_Tokens';
-$TABLE_LOG  		= 'SingleID_log';
 
-$PWD_TEMP_FILES = md5($_SERVER['SCRIPT_FILENAME'] . ' <--- CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!');
 
+
+// ------------------------------ SENSITIVE ACCOUNT SECTION START ------------------------------
+// if you set requested_data to 1,4,5 OR 1,4,6 you have to fill the following values 
+
+define("billing_key", 'aba5399b8d4b172b3abec582743a9b637ac94e5ca19ea4dcb090ad0059598444'); 		// You have to request this key from www.singleid.com if requested_data is different from "1"
+
+$HOST 			= 'localhost';
+$USER 			= 'root';
+$PASS 			= 'password';
+$DB 			= 'SingleID_users';
+$TABLE_TOKENS  	= 'SingleID_Tokens';
+$TABLE_LOG  	= 'SingleID_log';
+
+$PWD_TEMP_FILES = md5($_SERVER['SCRIPT_FILENAME'] . ' -> CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!');
+
+// ------------------------------ SENSITIVE ACCOUNT SECTION END ------------------------------
 
 
 

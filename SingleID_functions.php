@@ -144,15 +144,15 @@ function safe_delete($file){
 	// on linux only
 	if (PHP_OS == 'Linux') {
 		
-		// it also depends on the filesystem type.... so doing this step could be useless...
+		// it also depends on the filesystem type.... so doing this step could be almost useless but is not so much recsource consuming so for now can be executed
 		
 		$size = filesize($file);
 	
-		//try {
-		//$src  = fopen('/dev/zero', 'rb');  // TODO fopen(/dev/zero): failed to open stream: Operation not permitted in
-		//} catch(Exception $e) {
-		$src  = fopen('./userdata/garbage.txt', 'rb');
-		// }
+		try {
+		$src  = fopen('/dev/zero', 'rb');  // Maybe on shared hosting this could not be done...
+		} catch(Exception $e) {
+		$src  = fopen('./'. PATH .'/garbage.txt', 'rb');
+		}
 		
 		$dest = fopen( $file, 'wb');
 		
