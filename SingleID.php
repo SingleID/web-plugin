@@ -19,7 +19,7 @@ header("Access-Control-Allow-Origin: *");
  * 
  * git clone https://github.com/SingleID/web-plugin.git
  * cd web-plugin
- * chmod 0777 userdata -R  // maybe 707 could be enough ? to do to check
+ * chmod 0777 userdata -R  // maybe 755 could be enough ? to do to check
  * 
  * 
  * You must have jQuery on the page that embed this script.
@@ -40,8 +40,8 @@ header("Access-Control-Allow-Origin: *");
 
 
 
-require('SingleID.conf.php'); // the only file that you can edit and that will be no replaced on your next git pull
-require('lib/password.php'); // for php < 5.5 but > 5.3.7
+require('SingleID.conf.php'); 	// the only file that you can edit and that will be no replaced on your next git pull
+require('lib/password.php'); 	// for php < 5.5 but > 5.3.7
 
 
 
@@ -51,7 +51,7 @@ require('lib/password.php'); // for php < 5.5 but > 5.3.7
 if (STORAGE == 'file') {
     if (!is_writable(PATH)) {
         error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 ' . PATH . ' -R ');
-        die('<p>no write permission!</p>');
+        die('<p style="font-family:verdana">no write permission!</p>');
     }
 }
 
@@ -155,12 +155,16 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
 			
 				require('GibberishAES.php');
-
-				$hashed_check = password_hash(md5($_POST['optionalAuth']), PASSWORD_BCRYPT);
+				
+					$options = Array(
+					'cost' => 11,
+					);
+					
+				$hashed_check = password_hash(md5($_POST['optionalAuth']), PASSWORD_BCRYPT, $options);
 	
 				$data = Array(
 					'UTID' => $_SESSION['SingleID']['hash'],
-					'bcrypted' => $hashed_check // two times for not save in the 
+					'bcrypted' => $hashed_check 
 				);
 				
 				$db->insert($TABLE_LOG, $data);
@@ -244,9 +248,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		
 		
 		
-		 // 2015-04-02
-		 ////if (substr($_POST['SharedSecret'],0,4) == '$2y$'){ // è bcrypted
-			
+		 	
 				if (password_verify($_POST['SharedSecret'], $hashed_token)) {
 					
 					GibberishAES::size(256);    // Also 192, 128
@@ -259,22 +261,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 					die('ko');
 					
 				}
-		 /*} else { // if PHP < 5.3.7 
-			error_log('PHP version too much old!');
-			if ((md5($_POST['SharedSecret']) == $hashed_token)) {
-					
-					// $old_key_size = GibberishAES::size();
-					GibberishAES::size(256);    // Also 192, 128
-					$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
-				
-					die($encrypted_secret_string); // the device has the password to decrypt this
-				
-				} else {
-					die('ko');
-				}
-			 
-		 }*/
-		
+		 
 		
 		
 		
@@ -283,7 +270,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
         
     
-} elseif (isset($_POST['UTID'])) { // MUST BE after gimmedetails
+} elseif (isset($_POST['UTID'])) { // *MUST BE* after gimmedetails
 	
     $_POST=array_map("strip_tags",$_POST);
     
@@ -302,6 +289,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			error_log(" debug ".$_POST['unc_hash'].", $hashed_token");
 		if (password_verify($_POST['unc_hash'], $hashed_token)) {
 			//Surely the user has correctly decrypted the data retrieved few moments ago
+			// because the user has returned the md5 hash of the plain text
 		}else{
 			
 			die('ko'); // the App hasn't decrypted the data, so WTF can authorize ?

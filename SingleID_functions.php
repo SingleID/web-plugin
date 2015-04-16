@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS `SingleID_log` (
   `happened_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`UTID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-* 
+
+
 * 
 */
 
@@ -49,18 +50,12 @@ function create_and_store_random_password($SingleID){
 	$HexPassword = bin2hex($Bytes);
 	
 	
-	if (version_compare(phpversion(), '5.3.7', '>=')) {
-	// you're on 5.3.7 or later
+	
 	$options = Array(
     'cost' => 12,
 	);
-		$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT,$options);
+	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT,$options);
 
-	
-	} else {
-		$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT);
-
-	}
 	
 	
 	
