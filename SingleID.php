@@ -373,23 +373,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	}
 	
 	
-    // if (isset($data['Refresh_Page'])){
-	//	// how is possible ?
-	//	unset($_SESSION['SingleID']); // leave the system clean
-    //    die('Wrong 260');
-	//}
-	
-	
-	/* unuseless because singleid_parse_profile fill it
-	 * 
-	 * if (isset($data['Bypass_Auth'])){
-		// how is possible ?
-		unset($_SESSION['SingleID']); // leave the system clean
-        die('Wrong 307');
-	}*/
-    
-    
-    
+   
 				// MANUAL SET
 				if (requested_data == '1,4,6'){ // TODO which check ?
 					// error_log('debug here 1,4,6');
@@ -414,16 +398,22 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			// a device has sent the data to the iframe so we can do a lot of thing
 			// the flow should be the following	
 	
+		if (!is_SingleID($_SESSION['SingleID']['who'])) {
+			die('Internal miscofinguration :: '.$_SESSION['SingleID']['who']);
+		}else{
+			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+		}
+			
 			require('SingleID_auth.php');
 			
-			if (Is_this_SingleID_already_present() == true){
+			if (Is_this_SingleID_already_present($db, $_SESSION['SingleID']['who']) == true){
 				
 					
 				if (Is_this_user_enabled() == true){
 					
-					update_the_user_data();
+					update_the_user_data($db, $_SESSION['SingleID']['who'],$data);
 					
-					user_is_logged();
+					user_is_logged($db, $_SESSION['SingleID']['who']);
 				
 				}else{
 					display_error_mex();
@@ -431,7 +421,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				
 			}else{
 				
-				if( Is_this_a_really_new_user_for_my_db == false){ // if a user is arelady registered ?
+				// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the ansswer is no! of course
+				
+				if( Is_this_a_really_new_user_for_my_db == false){ // if a user is already registered ?
 					display_error_mex();
 				}else{
 					

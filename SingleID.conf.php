@@ -41,6 +41,13 @@ define("LANGUAGE",'en');
 define("PATH",'userdata/');			// Change the default folder for storing temporary files if you can
 
 
+// Mysql section is needed (2FA?)
+$HOST 			= 'localhost';
+$USER 			= 'root';
+$PASS 			= 'password';
+$DB 			= 'SingleID_users';
+$TABLE_USER		= 'changeme';
+
 
 
 // ------------------------------ SENSITIVE ACCOUNT SECTION START ------------------------------
@@ -48,10 +55,7 @@ define("PATH",'userdata/');			// Change the default folder for storing temporary
 
 define("billing_key", 'aba5399b8d4b172b3abec582743a9b637ac94e5ca19ea4dcb090ad0059598444'); 		// You have to request this key from www.singleid.com if requested_data is different from "1"
 
-$HOST 			= 'localhost';
-$USER 			= 'root';
-$PASS 			= 'password';
-$DB 			= 'SingleID_users';
+
 $TABLE_TOKENS  	= 'SingleID_Tokens';
 $TABLE_LOG  	= 'SingleID_log';
 

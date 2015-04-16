@@ -22,13 +22,17 @@ foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
 }
 
 
-
-function Is_this_SingleID_already_present() {
-	// Sanitize the data and check in your DB if the user is already present
-	
+function Is_this_SingleID_already_present($db, $who) {
+	// Sanitize the data and check in your DB
+		
+		// EXAMPLE CODE
+		$db->where ("SingleID", $who);	 
+		$numeric_id = $db->getValue ($TABLE_USER, 'id');
+		error_log('id founded is numeric' . is_numeric($numeric_id));
+		return is_numeric($numeric_id);
 }
 
-function Is_this_user_enabled() {
+function Is_this_user_enabled($db, $who ) {
 	
 	// NO
 	$data['Refresh_Page'] = 0; // remove refresh
@@ -39,11 +43,11 @@ function Is_this_user_enabled() {
 }
 
 
-function update_the_user_data() {
+function update_the_user_data($db, $who, $data) {
 	
 }
 
-function user_is_logged() {
+function user_is_logged($db, $who) {
 	
 }
 
