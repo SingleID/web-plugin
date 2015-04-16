@@ -187,14 +187,14 @@ return '
 	<body>
 		<div class="singleid_button_wrap singleid_pointer">
 			<div class="single_text_single_id">'.$label[$language][$requested_data].'</div>
-			<div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling, no more password" /></div>
+			<div class="icon_box_single_id"><img src="css/SingleID/SingleID_logo_key.jpg" alt="No more form filling, no more password" title="SingleID" /></div>
 
 			<div class="white_back_single_id singleid_invisible">
 				<input class="singleid_styled_input" name="SingleID" type="text" value="" maxlength="8" />
 				<button type="button" class="icon_box_go" onClick="sid_sendData();">go</button>
 			</div>
 			<div class="singleid_waiting singleid_invisible">waiting for data</div>
-			<a href="http://www.singleid.com" target="_top" title="SingleID is available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
+			<a href="http://www.singleid.com" target="_top" title="Available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
 			</a>
 		</div>
 	   </body>
