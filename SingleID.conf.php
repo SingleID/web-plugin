@@ -29,9 +29,8 @@ Mysql
 
 */
  
- 
 
-define("LOGO_URL", 'http://www.singleid.com/img/money-icon.png');
+define("LOGO_URL", 'http://www.singleid.com/img/money-icon.png');	// not on HTTPS!
 define("SITE_NAME", 'Device Auth');
 define("requested_data", '1,4,6');
 define("admin_contact", ''); 		// You have to set this field only if requested_data is different from "1"
@@ -39,7 +38,7 @@ define("STORAGE",'file');			// use files for temporary storage ( memcache or mys
 define("ACCEPT",'both');			// which profile we accept (allowed value are personal, business, both )
 define("LANGUAGE",'en');
 define("PATH",'userdata/');			// Change the default folder for storing temporary files if you can
-
+define("ACCEPT_NEW_USER", false);	
 
 // Mysql section (if needed) (2FA?)
 $HOST 			= 'localhost';

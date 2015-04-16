@@ -41,12 +41,12 @@ header("Access-Control-Allow-Origin: *");
 
 
 require('SingleID.conf.php'); 	// the only file that you can edit and that will be no replaced on your next git pull
-require('lib/password.php'); 	// for php < 5.5 but > 5.3.7
+require('lib/password.php'); 	// needed for php =< 5.5 but >= 5.3.3
 
 
 
 
-// before all
+// System checks
 
 if (STORAGE == 'file') {
     if (!is_writable(PATH)) {
@@ -92,18 +92,19 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		
 		if (!file_exists( PATH . 'garbage.txt')) {
 			$garbagedata = '
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quaesita enim virtus est, non quae relinqueret naturam, sed quae tueretur. Quare attende, quaeso. Ergo ita: non posse honeste vivi, nisi honeste vivatur? Itaque hic ipse iam pridem est reiectus;
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quaesita enim virtus est, non quae relinqueret naturam, sed quae tueretur. Quare attende, quaeso. Ergo ita: non posse honeste vivi, nisi honeste vivatur? Itaque hic ipse iam pridem est reiectus;
 
-			Audax negotium, dicerem impudens, nisi hoc institutum postea translatum ad philosophos nostros esset. Duo Reges: constructio interrete. Facillimum id quidem est, inquam. At enim, qua in vita est aliquid mali, ea beata esse non potest. Atque ab his initiis profecti omnium virtutum et originem et progressionem persecuti sunt. Quamquam ab iis philosophiam et omnes ingenuas disciplinas habemus; Sed plane dicit quod intellegit. Illa argumenta propria videamus, cur omnia sint paria peccata.
+Audax negotium, dicerem impudens, nisi hoc institutum postea translatum ad philosophos nostros esset. Duo Reges: constructio interrete. Facillimum id quidem est, inquam. At enim, qua in vita est aliquid mali, ea beata esse non potest. Atque ab his initiis profecti omnium virtutum et originem et progressionem persecuti sunt. Quamquam ab iis philosophiam et omnes ingenuas disciplinas habemus; Sed plane dicit quod intellegit. Illa argumenta propria videamus, cur omnia sint paria peccata.
 
-			Immo videri fortasse. Philosophi autem in suis lectulis plerumque moriuntur. Qui autem esse poteris, nisi te amor ipse ceperit? Si mala non sunt, iacet omnis ratio Peripateticorum.
+Immo videri fortasse. Philosophi autem in suis lectulis plerumque moriuntur. Qui autem esse poteris, nisi te amor ipse ceperit? Si mala non sunt, iacet omnis ratio Peripateticorum.
 
-			Habent enim et bene longam et satis litigiosam disputationem. Etenim semper illud extra est, quod arte comprehenditur. Prioris generis est docilitas, memoria; Hoc loco tenere se Triarius non potuit. Non est igitur voluptas bonum. Beatus sibi videtur esse moriens. Vitae autem degendae ratio maxime quidem illis placuit quieta.
+Habent enim et bene longam et satis litigiosam disputationem. Etenim semper illud extra est, quod arte comprehenditur. Prioris generis est docilitas, memoria; Hoc loco tenere se Triarius non potuit. Non est igitur voluptas bonum. Beatus sibi videtur esse moriens. Vitae autem degendae ratio maxime quidem illis placuit quieta.
 
-			Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intellegetur nisi uti ne quae pars naturae neglegatur? Quarum ambarum rerum cum medicinam pollicetur, luxuriae licentiam pollicetur. Nemo igitur esse beatus potest. Quid ergo attinet gloriose loqui, nisi constanter loquare? Quod iam a me expectare noli.
-			';  					// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... it depends 
-			$fp           = fopen(PATH . 'garbage.txt', 'w');
-			fwrite($fp, $garbagedata);
+Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intellegetur nisi uti ne quae pars naturae neglegatur? Quarum ambarum rerum cum medicinam pollicetur, luxuriae licentiam pollicetur. Nemo igitur esse beatus potest. Quid ergo attinet gloriose loqui, nisi constanter loquare? Quod iam a me expectare noli.
+';
+			// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... it depends 
+			$fp           = fopen('./'. PATH .'/garbage.txt', 'w');
+			fwrite($fp, base64_encode(uniqid().$garbagedata));
 			fclose($fp);
 		}
 		
@@ -115,8 +116,13 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	}
     
     
-    
-    $Bytes = openssl_random_pseudo_bytes(16, $cstrong);
+    if(function_exists('openssl_random_pseudo_bytes')) {
+		$Bytes = openssl_random_pseudo_bytes(16, $strong);
+	}
+    if ($strong !== true) {
+		die('Please use PHP >= 5.3 or Mcrypt extension');
+    }
+	
 	$_SESSION['SingleID']['hash'] = bin2hex($Bytes);
     
         if (!is_SingleID($_POST['single_id'])) {
@@ -126,33 +132,31 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	$_SESSION['SingleID']['who'] = $_POST['single_id'];
         
 		if(!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])){						// needed for cloudflare flexible ssl
-			$root .= $_SERVER['HTTP_X_FORWARDED_PROTO'].'://'; 				// needed for cloudflare flexible ssl
-		}else{																// needed for cloudflare flexible ssl
-			$root .= !empty($_SERVER['HTTPS']) ? "https://" : "http://";	// needed for cloudflare flexible ssl
-		}																	// needed for cloudflare flexible ssl
+			$root .= $_SERVER['HTTP_X_FORWARDED_PROTO'].'://'; 				
+		} else {															
+			$root .= !empty($_SERVER['HTTPS']) ? "https://" : "http://";
+		}
 		
 		if ($root == 'https://'){
 			$ssl = 1;
-		}else{
+		} else {
 			$ssl = 0;
 		}
         
 	$protocol[1] = 'https';
 	$protocol[0] = 'http';
         
-        if (($ssl == 0) and (requested_data <> '1')){ // { TODO -> double check server side }
-            error_log('SSL needed! ' . $ssl); // This will be correct very soon
-            // die('Misconfiguration:'. $ssl); // TODO TO CHECK 
+        if (($ssl == 0) and (requested_data <> '1')){ 	// { is blocked ALSO server side }
+            error_log('SSL needed! ' . $ssl); 			
+            die('SSL Misconfiguration:'. $ssl); 			
         }
 	
         
-        
-        
-		if (requested_data == '1,4,6') {  	// sensitive account
-			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-			error_log('debug optional auth: ' . $_POST['optionalAuth']);
+		if (requested_data == '1,4,6') {  	// Sensitive account
 			
-			if ($_POST['optionalAuth'] <> '[]') { // TODO -> double check
+			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+			
+			if ($_POST['optionalAuth'] <> '[]') {
 			
 				require('GibberishAES.php');
 				
@@ -169,8 +173,6 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 				
 				$db->insert($TABLE_LOG, $data);
     
-    
-
 				GibberishAES::size(256);
 				$encrypted_secret_string = GibberishAES::enc($_POST['optionalAuth'], $PWD_TEMP_FILES);
 
@@ -213,6 +215,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         }
         
         $_SESSION['SingleID']['counter'] = 0;
+        
         die('100'); // js will use this code for refresh
         
 
@@ -237,65 +240,60 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		$encdata = fread($fh, filesize($filetarget));
 		fclose($fh);
 		
-		safe_delete($filetarget); // if i delete the files now... how can i check the md5 of the decrypted text ?
+		safe_delete($filetarget);
 		
 		$decrypted_data = GibberishAES::dec($encdata, $PWD_TEMP_FILES);
 		
 		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		$db->where ("SingleID", $_POST['SingleID']);
 		$hashed_token = $db->getValue ($TABLE_TOKENS, 'hashedThirdFactor');
-		//re-encrypt the data with the client key if the hash is correct !
 		
-		
-		
+		//here we re-encrypt the data with the client key if the hash is correct !
 		 	
-				if (password_verify($_POST['SharedSecret'], $hashed_token)) {
-					
-					GibberishAES::size(256);    // Also 192, 128
-					$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
+			if (password_verify($_POST['SharedSecret'], $hashed_token)) {
 				
-					die($encrypted_secret_string); // the device has the password to decrypt this
+				GibberishAES::size(256);    // Also 192, 128
+				$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
+			
+				die($encrypted_secret_string); // the device has the password to decrypt this
+			
+			} else {
 				
-				} else {
-					
-					die('ko');
-					
-				}
-		 
-		
-		
-		
-		
+				die('ko');
+
+			}
+
 	}
     
         
     
 } elseif (isset($_POST['UTID'])) { // *MUST BE* after gimmedetails
 	
+	// an app has sent something
+	
     $_POST=array_map("strip_tags",$_POST);
     
-    // an app has sent something
     if (!is_md5($_POST['UTID'])) {
-        //unset($_SESSION['SingleID']); // leave the system clean for better security
         die('Wrong data received!');
     }
     
-    if (requested_data == '1,4,6') {
+    if (requested_data == '1,4,6') {	// is an authorization confirmation?
 		
-			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
-			$db->where ('UTID', $_POST['UTID']);
-			$hashed_token = $db->getValue ($TABLE_LOG, 'bcrypted');
+		$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
+		$db->where ('UTID', $_POST['UTID']);
+		$hashed_token = $db->getValue ($TABLE_LOG, 'bcrypted');
 			
-			error_log(" debug ".$_POST['unc_hash'].", $hashed_token");
-		if (password_verify($_POST['unc_hash'], $hashed_token)) {
-			//Surely the user has correctly decrypted the data retrieved few moments ago
-			// because the user has returned the md5 hash of the plain text
-		}else{
-			
-			die('ko'); // the App hasn't decrypted the data, so WTF can authorize ?
-			error_log('plain text hash mismatch! :-/');
-			
-		}
+			if (password_verify($_POST['unc_hash'], $hashed_token)) {
+				
+				// Surely the user has correctly decrypted the data retrieved few moments ago
+				// because the user has returned the md5 hash of the plain text
+				
+			}else{
+				
+				die('ko'); // the App hasn't decrypted the data, so WTF can authorize?
+				error_log('plain text hash mismatch! :-/');
+				
+			}
 	}
     
     
@@ -307,7 +305,6 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
             while (false !== ($file = readdir($handle))) {
                 if ((time() - filectime(PATH . $file)) >= 180) {
                     if (preg_match('/\.SingleID.txt$/i', $file)) {
-                        //error_log('vorrei cancellare: '.$file);
                         safe_delete( PATH . $file );
                     }
                 }
@@ -315,7 +312,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         }
        
         
-        // we store the received data
+        // we store the received data so the javascript could read them later from the browser
         $data = base64_encode(gzcompress(serialize($_POST), 9)); // we compress only to avoid some research with grep by script kiddies like you :-P
         $fp   = fopen(PATH . $_POST['UTID'] . '.SingleID.txt', 'w');
         fwrite($fp, $data);
@@ -324,23 +321,24 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     // This step overwrite any previous value founded into DB
-    if (requested_data == '1,4,5'){ // TODO in April 2015
+    if (requested_data == '1,4,5') {
 
 
-		if (is_SingleID($_POST['SingleID'])){
+		if (is_SingleID($_POST['SingleID'])) {
 			
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 			// we need to create a token because this is the first handshake for a sensitive account
 			$hex_secret = create_and_store_random_password($_POST['SingleID']);
 			
-		
 			die($hex_secret);
+
 		}else{
-			error_log('ops... missing something important right here');
+			error_log('No SingleID detected');
+			die('ko');
 		}
 	}
     
-    die('ok');	// if not died before
+    die('ok');	// if not died this is the right place
     
 
 } elseif ($_REQUEST['op'] == 'getdata') {	// the js from desktop browser is checking for data (if the device has already replied)
@@ -351,8 +349,9 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     }
     
     if (STORAGE == 'file') {
-        $filetarget           = PATH . $_SESSION['SingleID']['hash'] . '.SingleID.txt';
-        $data                 = unserialize(gzuncompress(base64_decode(file_get_contents($filetarget))));
+		$filename 			= $_SESSION['SingleID']['hash'] . '.SingleID.txt';
+        $filetarget			= PATH . $filename;
+        $data				= unserialize(gzuncompress(base64_decode(file_get_contents($filetarget))));
     //    $data['Refresh_Page'] = 1;
     }
     // if this value is set to 1
@@ -393,10 +392,13 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 					$data['Bypass_Auth']        = 1; // if set to 1 the php code with the query will not be executed
 				}
     
-    if ($data['Bypass_Auth'] <> 1) { // do not exec code for auth
+    
+    if ($data['Bypass_Auth'] == 1) { // do sometimes we do not want to exec this block
+		
 			// here is the crucial point
 			// a device has sent the data to the iframe so we can do a lot of thing
-			// the flow should be the following	
+			// the flow should be the following
+			// if you want to hack this system read this carefully :-P
 	
 		if (!is_SingleID($_SESSION['SingleID']['who'])) {
 			die('Internal miscofinguration :: '.$_SESSION['SingleID']['who']);
@@ -404,34 +406,40 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		}
 			
-			require('SingleID_auth.php');
+			require('SingleID_auth.php');	// this code is specific for each user
 			
-			if (Is_this_SingleID_already_present($db, $_SESSION['SingleID']['who']) == true){
-				
+			if (Is_this_SingleID_already_present($db, $_SESSION['SingleID']['who'], $TABLE_USER) === true){
 					
-				if (Is_this_user_enabled() == true){
+				if (Is_this_user_enabled($db, $who, $TABLE_USER) === true){
 					
 					update_the_user_data($db, $_SESSION['SingleID']['who'],$data);
 					
-					user_is_logged($db, $_SESSION['SingleID']['who']);
+					// give the data array to this function that give back the modified values
+					$data = user_is_logged($db, $_SESSION['SingleID']['who'], $TABLE_USER, $data);
+					
+				} else {
+					
+					display_error_mex(); // TODO
 				
-				}else{
-					display_error_mex();
 				}
 				
 			}else{
 				
 				// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the ansswer is no! of course
-				
-				if( Is_this_a_really_new_user_for_my_db == false){ // if a user is already registered ?
-					display_error_mex();
-				}else{
-					
-					// the email sent is not present in the DB. So is a new User !
-					// we need to create a record about this new user
-					create_the_user();	// according to request 5 and 6
-					user_is_logged();	
-					
+								// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the ansswer is no! of course
+				if(ACCEPT_NEW_USER === true) {
+					if( Is_this_a_really_new_user_for_my_db == false){ // if a user is already registered ?
+						display_error_mex();
+					}else{
+						
+						// the email sent is not present in the DB. So is a new User !
+						// we need to create a record about this new user
+						create_the_user();	// according to request 5 and 6
+						user_is_logged();	
+						
+					}
+				} else {
+					die('no new user accepted');
 				}
 				
 			}
@@ -447,16 +455,15 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     // See if it exists before attempting deletion on it
     if (file_exists($filetarget)) {
-        unlink($filetarget); // Delete now
+		
+        safe_delete($filename); // Delete now
+        
         unset($_SESSION['SingleID']); // leave the system clean for better security
         
     }
     
-    // See if it exists again to be sure it was removed // paranoid check that could be removed
-    if (file_exists($filetarget)) {
-        error_log('Problem deleting. Check your permission ! ' . $filetarget);
-    }
-    die;
+    
+    die('ok');
     
     
     
@@ -470,7 +477,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     if ($_SESSION['SingleID']['counter'] > 120) {
         die('400'); // too much time is passed
-        // the output number code are inspired from the http status code
+        // the output number code are inspired from the http status code and are read by the .js
     } else if (is_file($file)) { // the file exist !
         die('200'); // the post data has been received from the device so we launch the JS to populate the fields
     } else {
@@ -481,20 +488,18 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 }
 
 
-// debug info
+// YOU SHOULD NOT BE HERE!
 echo '<p>Ops: This script must be embedded into a page to work correctly</p>';
 
 
 
 
 
-function is_SingleID($val)
-{
+function is_SingleID($val) {
     return (bool) preg_match("/[0-9a-f]{8}$/i", $val);
 }
 
-function is_md5($val)
-{
+function is_md5($val) {
     return (bool) preg_match("/[0-9a-f]{32}$/i", $val);
 }
 

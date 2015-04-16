@@ -17,29 +17,50 @@ if (!is_SingleID($_SESSION['SingleID']['who'])) {
 
 
 // what about PDO or filter var ?
-foreach ($data as $key => $val) { // prevention is better than cure ! #DV :-)
+/*
+foreach ($data as $key => $val) { 
     $datasafe[$key] = mysqli_real_escape_string($mysqli, $val);
 }
+*/
 
-
-function Is_this_SingleID_already_present($db, $who) {
-	// Sanitize the data and check in your DB
+function Is_this_SingleID_already_present($db, $who, $TABLE_USER) {
 		
-		// EXAMPLE CODE
-		$db->where ("SingleID", $who);	 
-		$numeric_id = $db->getValue ($TABLE_USER, 'id');
-		error_log('id founded is numeric' . is_numeric($numeric_id));
-		return is_numeric($numeric_id);
+		// EXAMPLE code
+		// COMMENTS TO DO / SingleID of course is an index in your TABLE
+		$db->where ("SingleID", $who);
+				
+		$numeric_id = $db->getOne ($TABLE_USER);
+		
+		if (is_numeric($numeric_id['id'])){
+			return true;
+		}else{
+			return false;
+		}
+		
 }
 
-function Is_this_user_enabled($db, $who ) {
+function Is_this_user_enabled($db, $who, $TABLE_USER) {
 	
-	// NO
-	$data['Refresh_Page'] = 0; // remove refresh
-    $data['Bypass_Auth']  = 1; // do not exec code for auth
-    $data['Mex']          = 'Your user is disabled on this site';
-    $data['Show_Error']   = 1; // shows a javascript error
-    
+	
+	$db->where ("SingleID", $who);
+				
+		$response = $db->getOne ($TABLE_USER);
+		
+		if ($response['enabled'] == 1){
+			
+			return true;		// mmmm
+			
+		}else{
+			// NO
+			$data['Refresh_Page'] = 0; // remove refresh
+			$data['Bypass_Auth']  = 1; // do not exec code for auth
+			$data['Mex']          = 'Your user is disabled on this site';
+			$data['Show_Error']   = 1; // shows a javascript error
+			
+			return $data;
+		}
+	
+	
 }
 
 
@@ -70,37 +91,6 @@ function create_the_user() {
 	
 }	
 
-
-
-die();
-
-
-// Is This SingleID already present in the DB ?
-
-
-// Possibilities
-
-// User not present in DB with SingleID and not present with the same Email !
-
-// we try to auto register if the profile contains the minimum of data
-
-
-// User not present in DB with SingleID BUT with email already present
-
-// The system should send a confirmation link to the email already present to enable the association from the user !
-
-
-// User present in DB with SingleID but account disabled/banned/removed/deleted
-
-// display error
-
-// User present in DB with SingleID 
-
-// which profile we accept ? (personal/companies) ?
-
-// We need to launch an update query of the user data ( if met the minimum profile data request )
-
-// Brainstorming on... if the user now has just logged with a personal profile and then with a company profile ?
 
 
 

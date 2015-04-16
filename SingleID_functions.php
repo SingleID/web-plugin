@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `SingleID_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
 
-* 
+
 */
 
 }
@@ -33,26 +33,24 @@ CREATE TABLE IF NOT EXISTS `SingleID_log` (
 
 function create_and_store_random_password($SingleID){
 	
-	// TODO think to binding this release to an ip?
-	// maybe with the immediately next test transaction ?
-	// first delete all
-	
-	
+	// we always delete any previous handshake
 	global $db;
     $db->where ("SingleID",$SingleID);
     $db->delete ('SingleID_Tokens');
-    
-    
+
     $ip = gimme_visitor_ip();
-	
-	
-	$Bytes = openssl_random_pseudo_bytes(16, $cstrong);
+
+	if(function_exists('openssl_random_pseudo_bytes')) {
+		$Bytes = openssl_random_pseudo_bytes(16, $strong);
+	}
+    if ($strong !== true) {
+		die('Please use PHP >= 5.3 or Mcrypt extension');
+    }
+    
 	$HexPassword = bin2hex($Bytes);
-	
-	
-	
+
 	$options = Array(
-    'cost' => 12,
+    'cost' => 12
 	);
 	$hashed_third_factor = password_hash($HexPassword, PASSWORD_BCRYPT,$options);
 
@@ -66,14 +64,12 @@ function create_and_store_random_password($SingleID){
 		);
     $id = $db->insert ('SingleID_Tokens', $data);
     
-	// if table exist but we want to update the password ?
 	
-	// in the table we have
-	if($id == $SingleID){
-	// die($HexPassword); // now the client can securely save this password for the next handshake
-		error_log('successful saved hash ' . $hashed_third_factor . ' for '. $SingleID);
-	}else{
-		error_log('wtf happened?');
+	if ($id == $SingleID){
+		//error_log('successful saved hash ' . $hashed_third_factor . ' for '. $SingleID);
+	} else {
+		error_log('wtf happened? no handshake saved');
+		return 'ko-handshake';
 	}
 	
 	return $HexPassword;
@@ -143,11 +139,20 @@ function safe_delete($file){
 		
 		$size = filesize($file);
 	
+	
+	
 		try {
-		$src  = fopen('/dev/zero', 'rb');  // Maybe on shared hosting this could not be done...
-		} catch(Exception $e) {
-		$src  = fopen('./'. PATH .'/garbage.txt', 'rb');
+			$src  = fopen('/dev/zero', 'rb');  // Maybe on shared hosting this could not be done...
+			if (! $src) {
+				throw new Exception("Could not open the file!");
+			}
 		}
+		catch (Exception $e) {
+			// echo "Error (File: ".$e->getFile().", line ". $e->getLine()."): ".$e->getMessage();
+			$src  = fopen('./'. PATH .'/garbage.txt', 'rb');
+		}
+
+
 		
 		$dest = fopen( $file, 'wb');
 		
