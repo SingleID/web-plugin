@@ -248,11 +248,12 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 		$db->where ("SingleID", $_POST['SingleID']);
 		$hashed_token = $db->getValue ($TABLE_TOKENS, 'hashedThirdFactor');
 		
-		//here we re-encrypt the data with the client key if the hash is correct !
+		// here we re-encrypt the data with the client key if the hash is correct !
 		 	
 			if (password_verify($_POST['SharedSecret'], $hashed_token)) {
 				
 				GibberishAES::size(256);    // Also 192, 128
+				
 				$encrypted_secret_string = GibberishAES::enc($decrypted_data, $_POST['SharedSecret']);
 			
 				die($encrypted_secret_string); // the device has the password to decrypt this
@@ -419,14 +420,17 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 					
 				} else {
 					
-					display_error_mex(); // TODO
+					display_error_mex($data);
 				
 				}
 				
-			}else{
+			}
+			
+				die('user not found');
+			
+			} /*else{
 				
-				// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the ansswer is no! of course
-								// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the ansswer is no! of course
+				// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the answer is no! of course
 				if(ACCEPT_NEW_USER === true) {
 					if( Is_this_a_really_new_user_for_my_db == false){ // if a user is already registered ?
 						display_error_mex();
@@ -442,14 +446,13 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 					die('no new user accepted');
 				}
 				
-			}
+			} */
 			
         
     }
     // Printing the data (received) the js/plugin.js will fill the form.
     
     print json_encode($data); // redirect to
-    
     
     
     

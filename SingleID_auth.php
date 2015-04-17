@@ -72,8 +72,14 @@ function user_is_logged($db, $who) {
 	
 }
 
-function display_error_mex() {
+function display_error_mex($data) {
 	
+		$data['Refresh_Page'] = 0; // remove refresh
+        $data['Bypass_Auth']  = 1; // do not exec code for auth
+        $data['Mex']          = 'SingleID not allowed to login';
+        $data['Show_Error']   = 1; // shows a javascript error
+        
+        return $data;
 }
 
 function Is_this_a_really_new_user_for_my_db() {

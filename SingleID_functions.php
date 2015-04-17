@@ -132,14 +132,12 @@ function send_request_to_singleid_server($fields,$fields_string){
 
 function safe_delete($file){
 	// for better privacy we can try overwrite them before deleting...
-	// on linux only
+	// on linux only we try to access /dev/zero
 	if (PHP_OS == 'Linux') {
 		
-		// it also depends on the filesystem type.... so doing this step could be almost useless but is not so much recsource consuming so for now can be executed
+		// it also depends on the filesystem type... so doing this step could be almost useless but is not so much resource consuming so for now can be executed
 		
 		$size = filesize($file);
-	
-	
 	
 		try {
 			$src  = fopen('/dev/zero', 'rb');  // Maybe on shared hosting this could not be done...
@@ -151,16 +149,22 @@ function safe_delete($file){
 			// echo "Error (File: ".$e->getFile().", line ". $e->getLine()."): ".$e->getMessage();
 			$src  = fopen('./'. PATH .'/garbage.txt', 'rb');
 		}
-
-
+	
 		
-		$dest = fopen( $file, 'wb');
-		
-		stream_copy_to_stream($src, $dest, $size);
-		
-		fclose($src);
-		fclose($dest);
+	} else { // on different platform....
+	
+		$src  = fopen('./'. PATH .'/garbage.txt', 'rb');
+	
 	}
+	
+	
+	$dest = fopen( $file, 'wb');
+		
+	stream_copy_to_stream($src, $dest, $size);
+		
+	fclose($src);
+	fclose($dest);
+	
 	unlink($file);
 }
 
@@ -199,7 +203,7 @@ return '
 				<button type="button" class="icon_box_go" onClick="sid_sendData();">go</button>
 			</div>
 			<div class="singleid_waiting singleid_invisible">waiting for data</div>
-			<a href="http://www.singleid.com" target="_top" title="Available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
+			<a href="https://www.singleid.com" target="_top" title="Available for Android, iPhone and Windows Phone"><div class="free_text_single_id">Get SingleID now!</div>
 			</a>
 		</div>
 	   </body>
@@ -243,7 +247,7 @@ function singleid_parse_profile($data, $accepted)
     }
         
         
-    // before anything we need to check if the profile contains a minimum of data !
+    //we need to check if the profile contains a minimum of data !
     if (($data['which_set'] == 'personal') and (($accepted == 'personal') or ($accepted == 'both'))) { // ho ricevuto un set di dati di tipo personale
         // the minimum required data are:
         

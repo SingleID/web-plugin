@@ -11,7 +11,7 @@ var sid_div;
 var sid_domain = document.domain;
 var sid_url = location.origin + location.pathname;
 var sid_plugin_url = sid_url.replace("plugin.js?op=init", "SingleID.php"); 
-console.log('reply to: '+sid_plugin_url);
+// console.log('reply to: '+sid_plugin_url);
 var has_answer = 0;
 var singleIDInterval;
 
@@ -53,21 +53,19 @@ function sid_sendData()
 		
 		$(parent.window.jQuery('.SingleIDAuth')).each(function() {
 			AuthArray[$(this).attr('id')] = $(this).val();
-			//console.log($(this).attr('id') + ' ' +  $(this).val());
 		});
 		var AuthString = JSON.stringify(AuthArray);
-		// console.log(AuthString);
 	
 	
 	if(single_id)
 	{
 		jQuery.post(sid_plugin_url, {single_id:single_id, optionalAuth:AuthString, op: 'send'}, function(d){
 		
-		if (isNaN(d)) { // #DV fix 
+		if (isNaN(d)) {
 			clearInterval(singleIDInterval);
 			jQuery('.singleid_waiting').html(d);
 		}else{
-			singleIDInterval = setInterval(sid_refresh, 1200);
+			singleIDInterval = setInterval(sid_refresh, 1500);
 		}
 		
 		});
@@ -80,12 +78,10 @@ function sid_populateData()
 {
 	
 	jQuery.post(sid_plugin_url, {op: 'getdata'}, function(d){
-		// console.log('TO PARSE: '+d);
 		var obj = jQuery.parseJSON(d);
 		
 		if (obj.ALREADY_REGISTERED === 1){ 
-			// the user is already present in the DB
-			// PHP has added this var so we haven't to fill a form but we need only to reload the main page !
+			// PHP has set this value so we haven't to fill a form but we need only to reload the main page !
 			window.top.location.reload();
 			return false;
 		}
