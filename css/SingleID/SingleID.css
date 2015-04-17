@@ -2,9 +2,7 @@
 
 @font-face {
     font-family: 'kelson_sansbold';
-    src: url('kelson_sans_bold.eot');
-    src: url('kelson_sans_bold.eot?#iefix') format('embedded-opentype'),
-         url('kelson_sans_bold.woff2') format('woff2'),
+    src: url('kelson_sans_bold.woff2') format('woff2'),
          url('kelson_sans_bold.woff') format('woff');
     font-weight: normal;
     font-style: normal;

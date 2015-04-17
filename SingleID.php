@@ -1,12 +1,4 @@
 <?php
-
-/*
- * THIS CODE IS IN FLUX AND IS SUBJECT TO CHANGE AT ANY TIME
- * It is provided for discussion only and may change at any moment. 
- * Don't cite this code other than as work in progress.
- * 
- */
-
 header("Access-Control-Allow-Origin: *");
 
 
@@ -30,7 +22,7 @@ header("Access-Control-Allow-Origin: *");
  * 
  * The next step is to insert the SingleID Button. Place this line of code to the place of your site where you want to place the button:
  * 
- * <iframe src="web-plugin/SingleID.php?op=init" width="270" height="80" frameborder="0"></iframe>
+ * <iframe src="web-plugin/SingleID.php?op=init" width="220" height="80" frameborder="0"></iframe>
  *
  * 
  *
@@ -38,26 +30,31 @@ header("Access-Control-Allow-Origin: *");
  */
 
 
+if (file_exists( 'personal.conf.php')) {
+	require('personal.conf.php'); 		// the only file that you can edit and that will be no replaced on your next git pull
+	require('lib/password.php'); 		// needed for php =< 5.5 but >= 5.3.3
+	require('MysqliDb.php');			
+	require('SingleID_functions.php');
+} else {
+	die('<p style="font-family:arial;">Config file missing</p>');
+}
 
 
-require('SingleID.conf.php'); 	// the only file that you can edit and that will be no replaced on your next git pull
-require('lib/password.php'); 	// needed for php =< 5.5 but >= 5.3.3
 
-
+// configuration version
 
 
 // System checks
 
 if (STORAGE == 'file') {
     if (!is_writable(PATH)) {
-        error_log('no permission for userdata/ folder TRY -> sudo chmod 0777 ' . PATH . ' -R ');
-        die('<p style="font-family:verdana">no write permission!</p>');
+        error_log('no permission for '.PATH.'/ folder. TRY -> sudo chmod 0777 ' . PATH . ' -R ');
+        die('<p style="font-family:verdana;">no write permission!</p>');
     }
 }
 
 
-require('MysqliDb.php');
-require('SingleID_functions.php');
+
 
 
 
@@ -77,14 +74,14 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 		// this step is for extra security. If you really know what are you doing you can remove
 		// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
 		if (!file_exists( PATH . 'index.html')) {
-			$securitydata = '<html><h1>Silence is gold</h1></html>';  // absolutely prevent directory browsing!
+			$securitydata = '<html><h1>Silence is gold</h1></html>';  	// absolutely prevent directory browsing!
 			$fp           = fopen(PATH . 'index.html', 'w');
 			fwrite($fp, $securitydata);
 			fclose($fp);
 		}
 		
 		if (!file_exists( PATH . '.htaccess')) {
-			$securitydata = 'Options -Indexes';  					// absolutely prevent directory browsing!
+			$securitydata = 'Options -Indexes';  						// absolutely prevent directory browsing!
 			$fp           = fopen(PATH . '.htaccess', 'w');
 			fwrite($fp, $securitydata);
 			fclose($fp);
@@ -102,7 +99,7 @@ Habent enim et bene longam et satis litigiosam disputationem. Etenim semper illu
 
 Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intellegetur nisi uti ne quae pars naturae neglegatur? Quarum ambarum rerum cum medicinam pollicetur, luxuriae licentiam pollicetur. Nemo igitur esse beatus potest. Quid ergo attinet gloriose loqui, nisi constanter loquare? Quod iam a me expectare noli.
 ';
-			// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... it depends 
+			// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... it depends from OS and FS used
 			$fp           = fopen('./'. PATH .'/garbage.txt', 'w');
 			fwrite($fp, base64_encode(uniqid().$garbagedata));
 			fclose($fp);
@@ -119,14 +116,15 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
     if(function_exists('openssl_random_pseudo_bytes')) {
 		$Bytes = openssl_random_pseudo_bytes(16, $strong);
 	}
+	
     if ($strong !== true) {
-		die('Please use PHP >= 5.3 or Mcrypt extension');
+		die('<p style="font-family:verdana;">Use PHP >= 5.3 or Mcrypt extension</p>');
     }
 	
 	$_SESSION['SingleID']['hash'] = bin2hex($Bytes);
     
         if (!is_SingleID($_POST['single_id'])) {
-			die('Internal miscofinguration');
+			die('<p style="font-family:verdana;">Internal miscofinguration</p>');
 		}
         
 	$_SESSION['SingleID']['who'] = $_POST['single_id'];
@@ -148,7 +146,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
         
         if (($ssl == 0) and (requested_data <> '1')){ 	// { is blocked ALSO server side }
             error_log('SSL needed! ' . $ssl); 			
-            die('SSL Misconfiguration:'. $ssl); 			
+            die('<p style="font-family:verdana;">SSL Misconfiguration</p>'); 			
         }
 	
         
@@ -224,7 +222,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
     // a Device is asking details about action to authorize
     
     if (!is_md5($_POST['UTID'])) {
-        die('Wrong data received!');
+        die('<p style="font-family:verdana;">Wrong data received!</p>');
     }
     
     
@@ -284,17 +282,14 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 		$db->where ('UTID', $_POST['UTID']);
 		$hashed_token = $db->getValue ($TABLE_LOG, 'bcrypted');
 			
-			if (password_verify($_POST['unc_hash'], $hashed_token)) {
-				
-				// Surely the user has correctly decrypted the data retrieved few moments ago
-				// because the user has returned the md5 hash of the plain text
-				
-			}else{
+			if (!password_verify($_POST['unc_hash'], $hashed_token)) {
 				
 				die('ko'); // the App hasn't decrypted the data, so WTF can authorize?
 				error_log('plain text hash mismatch! :-/');
 				
 			}
+			// Surely the user has correctly decrypted the data retrieved few moments ago
+			// because the user has returned the md5 hash of the plain text
 	}
     
     
@@ -339,7 +334,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 		}
 	}
     
-    die('ok');	// if not died this is the right place
+    die('ok');	// if not died before this is a good place for RIP ;-)
     
 
 } elseif ($_REQUEST['op'] == 'getdata') {	// the js from desktop browser is checking for data (if the device has already replied)
@@ -353,30 +348,25 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 		$filename 			= $_SESSION['SingleID']['hash'] . '.SingleID.txt';
         $filetarget			= PATH . $filename;
         $data				= unserialize(gzuncompress(base64_decode(file_get_contents($filetarget))));
-    //    $data['Refresh_Page'] = 1;
     }
     // if this value is set to 1
     // The javascript knows that is not a form filling example but the data has been processed from PHP
-    // start from here we need
-    
-    // but if I am already a registered user ?
-    
     
     // parse the received array and add some data if needed
     $data = singleid_parse_profile($data, ACCEPT);
     
     
     if (isset($data['ALREADY_REGISTERED'])){
-		// how is possible that the value is already SET someone thinks to be lucky?
-		unset($_SESSION['SingleID']); // leave the system clean
+		// how is possible that the value is already SET? Someone hopes to be lucky?
+		unset($_SESSION['SingleID']);
+		safe_delete($filename); // just to be sure
         die('Wrong 318');
 	}
 	
 	
    
-				// MANUAL SET
-				if (requested_data == '1,4,6'){ // TODO which check ?
-					// error_log('debug here 1,4,6');
+				if (requested_data == '1,4,6') { // we rely on the previous md5 check
+
 					$data['ALREADY_REGISTERED'] = 1; // force the refresh via js
 					$data['Refresh_Page']		= 0; // remove refresh
 					$data['Bypass_Auth']		= 0; // do not exec code for auth
@@ -385,11 +375,8 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 					die();
 				
 				}else{
-					
-				//error_log('debug here bbb');
-					// MANUAL SET
+
 					$data['ALREADY_REGISTERED'] = 0; // if set to 1 the JS will not try to populate a form
-					//$data['Refresh_Page']       = 0; // remove refresh
 					$data['Bypass_Auth']        = 1; // if set to 1 the php code with the query will not be executed
 				}
     
@@ -424,29 +411,11 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 				
 				}
 				
-			}
+			}else{
 			
 				die('user not found');
 			
-			} /*else{
-				
-				// TODO we accept new users ? for Throw-away the answer is yes... but for 2FA use? the answer is no! of course
-				if(ACCEPT_NEW_USER === true) {
-					if( Is_this_a_really_new_user_for_my_db == false){ // if a user is already registered ?
-						display_error_mex();
-					}else{
-						
-						// the email sent is not present in the DB. So is a new User !
-						// we need to create a record about this new user
-						create_the_user();	// according to request 5 and 6
-						user_is_logged();	
-						
-					}
-				} else {
-					die('no new user accepted');
-				}
-				
-			} */
+			}
 			
         
     }
