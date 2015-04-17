@@ -28,14 +28,13 @@ Possible values for requested_data
 */
  
 
-define("LOGO_URL", 'http://www.singleid.com/img/money-icon.png');	// must not be on HTTPS!
-define("SITE_NAME", 'Device Auth');
-define("requested_data", '1,4,6');
+define("LOGO_URL", 'http://www.singleid.com/img/logonew.png');	// must not be on HTTPS!
+define("SITE_NAME", 'basic install');
+define("requested_data", '1');
 define("admin_contact", ''); 		// You have to set this field only if requested_data is different from "1"
 define("STORAGE",'file');			// use files for temporary storage ( memcache or mysql will be included soon )
 define("ACCEPT",'both');			// which profile we accept (allowed value are personal, business, both )
 define("LANGUAGE",'en');
-define("PATH",'userdata/');			// Please change the default folder for storing temporary files
 
 // Mysql section (if needed) (2FA?)
 $HOST 			= 'localhost';
@@ -56,10 +55,18 @@ define("billing_key", 'aba5399b8d4b172b3abec582743a9b637ac94e5ca19ea4dcb090ad005
 $TABLE_TOKENS  	= 'SingleID_Tokens';
 $TABLE_LOG  	= 'SingleID_log';
 
-$PWD_TEMP_FILES = md5($_SERVER['SCRIPT_FILENAME'] . ' -> CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!');
 
 // ------------------------------ SENSITIVE ACCOUNT SECTION END ------------------------------
 
 
+
+
+
+// YOU SHOULD NOT CHANGE THE VALUES BELOW 
+$PWD_TEMP_FILES = hash('sha256', ' automatic setup should set random value at my right -> CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!'); 
+
+define("PATH",'userdata/');				// automatic setup should create a random folder with a random name of course
+
+define("CONFIG_VERSION",'20150418'); 	// ABSOLUTELY DO NOT CHANGE THIS. It's used to help you to know when a git pull requires you to do some work.
 
 ?>

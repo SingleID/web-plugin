@@ -106,6 +106,7 @@ function send_request_to_singleid_server($fields,$fields_string){
 		'Browser_ip: ' . $ip,
 		'admin_contact: ' . admin_contact
 	);
+	
 	//open connection
 	$ch      = curl_init();
 	
@@ -335,6 +336,14 @@ function singleid_parse_profile($data, $accepted)
 }
 
 
+
+function is_SingleID($val) {
+    return (bool) preg_match("/[0-9a-f]{8}$/i", $val);
+}
+
+function is_md5($val) {
+    return (bool) preg_match("/[0-9a-f]{32}$/i", $val);
+}
 
 
 ?>

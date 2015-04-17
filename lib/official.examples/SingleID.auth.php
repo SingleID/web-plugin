@@ -26,7 +26,7 @@ foreach ($data as $key => $val) {
 function Is_this_SingleID_already_present($db, $who, $TABLE_USER) {
 		
 		// EXAMPLE code
-		// COMMENTS TO DO / SingleID of course is an index in your TABLE
+		//  SingleID of course is an index in your TABLE
 		$db->where ("SingleID", $who);
 				
 		$numeric_id = $db->getOne ($TABLE_USER);

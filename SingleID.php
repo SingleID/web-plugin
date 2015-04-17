@@ -8,10 +8,14 @@ header("Access-Control-Allow-Origin: *");
  * To use the plugin on your site follow these step:
  * go to folder that contains your registration / identification form ( example form.php )
  * exec:
- * 
- * git clone https://github.com/SingleID/web-plugin.git
- * cd web-plugin
- * chmod 0777 userdata -R  // maybe 755 could be enough ? to do to check
+
+
+git clone https://github.com/SingleID/web-plugin.git
+
+{be sure to give the ownership of the folder to the apache user (on ubuntu is www-data) }
+sudo chown www-data:www-data web-plugin/ -R
+
+ 
  * 
  * 
  * You must have jQuery on the page that embed this script.
@@ -30,10 +34,17 @@ header("Access-Control-Allow-Origin: *");
  */
 
 
-if (file_exists( 'personal.conf.php')) {
+if ((file_exists(__DIR__ . '/setup.php')) and (!file_exists(__DIR__ . '/personal.conf.php'))) {
+	require ('setup.php');
+	// header('Location: '.$_SERVER['PHP_SELF']); 
+	die('setup done');
+}
+
+
+if (file_exists(__DIR__ . '/personal.conf.php')) {
 	require('personal.conf.php'); 		// the only file that you can edit and that will be no replaced on your next git pull
 	require('lib/password.php'); 		// needed for php =< 5.5 but >= 5.3.3
-	require('MysqliDb.php');			
+	require('lib/MysqliDb.php');			
 	require('SingleID_functions.php');
 } else {
 	die('<p style="font-family:arial;">Config file missing</p>');
@@ -70,47 +81,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     // here start the request from the website to the SingleID Server
     
 
-    if (STORAGE == 'file') {
-		// this step is for extra security. If you really know what are you doing you can remove
-		// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
-		if (!file_exists( PATH . 'index.html')) {
-			$securitydata = '<html><h1>Silence is gold</h1></html>';  	// absolutely prevent directory browsing!
-			$fp           = fopen(PATH . 'index.html', 'w');
-			fwrite($fp, $securitydata);
-			fclose($fp);
-		}
-		
-		if (!file_exists( PATH . '.htaccess')) {
-			$securitydata = 'Options -Indexes';  						// absolutely prevent directory browsing!
-			$fp           = fopen(PATH . '.htaccess', 'w');
-			fwrite($fp, $securitydata);
-			fclose($fp);
-		}
-		
-		if (!file_exists( PATH . 'garbage.txt')) {
-			$garbagedata = '
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quaesita enim virtus est, non quae relinqueret naturam, sed quae tueretur. Quare attende, quaeso. Ergo ita: non posse honeste vivi, nisi honeste vivatur? Itaque hic ipse iam pridem est reiectus;
 
-Audax negotium, dicerem impudens, nisi hoc institutum postea translatum ad philosophos nostros esset. Duo Reges: constructio interrete. Facillimum id quidem est, inquam. At enim, qua in vita est aliquid mali, ea beata esse non potest. Atque ab his initiis profecti omnium virtutum et originem et progressionem persecuti sunt. Quamquam ab iis philosophiam et omnes ingenuas disciplinas habemus; Sed plane dicit quod intellegit. Illa argumenta propria videamus, cur omnia sint paria peccata.
-
-Immo videri fortasse. Philosophi autem in suis lectulis plerumque moriuntur. Qui autem esse poteris, nisi te amor ipse ceperit? Si mala non sunt, iacet omnis ratio Peripateticorum.
-
-Habent enim et bene longam et satis litigiosam disputationem. Etenim semper illud extra est, quod arte comprehenditur. Prioris generis est docilitas, memoria; Hoc loco tenere se Triarius non potuit. Non est igitur voluptas bonum. Beatus sibi videtur esse moriens. Vitae autem degendae ratio maxime quidem illis placuit quieta.
-
-Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intellegetur nisi uti ne quae pars naturae neglegatur? Quarum ambarum rerum cum medicinam pollicetur, luxuriae licentiam pollicetur. Nemo igitur esse beatus potest. Quid ergo attinet gloriose loqui, nisi constanter loquare? Quod iam a me expectare noli.
-';
-			// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... it depends from OS and FS used
-			$fp           = fopen('./'. PATH .'/garbage.txt', 'w');
-			fwrite($fp, base64_encode(uniqid().$garbagedata));
-			fclose($fp);
-		}
-		
-		
-
-
-		
-		
-	}
     
     
     if(function_exists('openssl_random_pseudo_bytes')) {
@@ -156,7 +127,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 			
 			if ($_POST['optionalAuth'] <> '[]') {
 			
-				require('GibberishAES.php');
+				require('lib/GibberishAES.php');
 				
 					$options = Array(
 					'cost' => 11,
@@ -230,7 +201,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
     // open output
 	if (STORAGE == 'file') {
 		
-		require('GibberishAES.php');
+		require('lib/GibberishAES.php');
 		
 		// decrypt the data with the server key
 		$filetarget = './'. PATH . $_POST[UTID].'.auth.SingleID.txt';
@@ -360,7 +331,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 		// how is possible that the value is already SET? Someone hopes to be lucky?
 		unset($_SESSION['SingleID']);
 		safe_delete($filename); // just to be sure
-        die('Wrong 318');
+        die('Wrong 363');
 	}
 	
 	
@@ -394,7 +365,7 @@ Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intelleget
 			$db = new Mysqlidb ($HOST, $USER, $PASS, $DB);
 		}
 			
-			require('SingleID_auth.php');	// this code is specific for each user
+			require('personal.auth.php');	// this code is specific for each user
 			
 			if (Is_this_SingleID_already_present($db, $_SESSION['SingleID']['who'], $TABLE_USER) === true){
 					
@@ -466,14 +437,6 @@ echo '<p>Ops: This script must be embedded into a page to work correctly</p>';
 
 
 
-
-function is_SingleID($val) {
-    return (bool) preg_match("/[0-9a-f]{8}$/i", $val);
-}
-
-function is_md5($val) {
-    return (bool) preg_match("/[0-9a-f]{32}$/i", $val);
-}
 
 
 ?>
