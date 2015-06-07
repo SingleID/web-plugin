@@ -397,7 +397,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
     
     // See if it exists before attempting deletion on it
-    if (file_exists($filetarget)) {
+    if (file_exists($filename)) {
 		
         safe_delete($filename); // Delete now
         
@@ -406,7 +406,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     }
     
     
-    die('ok');
+    die(); // no output needed for form filling
     
     
     
