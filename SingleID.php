@@ -392,6 +392,157 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     }
     // Printing the data (received) the js/plugin.js will fill the form.
     
+
+// if you need a random pwd during the first step // TODO
+
+    if(function_exists('openssl_random_pseudo_bytes')) {
+		
+		$Bytes = openssl_random_pseudo_bytes(8, $strong);
+		$fake_random_pwd = bin2hex($Bytes);
+	
+	} else {
+	
+		$fake_random_pwd = substr(md5( microtime().rand(10,99999999).$_SERVER['REMOTE_ADDR'] ),rand(1,15),16);
+	
+	}
+	
+$data['fake_random_password'] 		= $fake_random_pwd;
+$data['fake_random_password_check'] = $fake_random_pwd;
+
+$arrTranslation['fake_random_password'] 			= ''; // if you need a random password for legacy
+$arrTranslation['fake_random_password_check'] 		= ''; // here you are 
+
+// translation from SingleID input fields to your form field name !
+$arrTranslation['Pers_title'] 						= '';
+$arrTranslation['Pers_first_name'] 					= '';
+$arrTranslation['Pers_middle_name'] 				= '';
+$arrTranslation['Pers_last_name'] 					= '';
+$arrTranslation['Pers_birthdate'] 					= '';
+$arrTranslation['Pers_birthdate_day'] 				= '';
+$arrTranslation['Pers_birthdate_month'] 			= '';
+$arrTranslation['Pers_birthdate_year'] 				= '';
+
+$arrTranslation['Pers_gender'] 						= '';
+$arrTranslation['Pers_postal_street_line_1'] 		= '';
+$arrTranslation['Pers_postal_street_line_2'] 		= '';
+$arrTranslation['Pers_postal_street_line_3'] 		= '';
+$arrTranslation['Pers_postal_city'] 				= '';
+$arrTranslation['Pers_postal_postalcode'] 			= '';
+$arrTranslation['Pers_postal_stateprov'] 			= '';
+$arrTranslation['Pers_postal_countrycode'] 			= '';
+$arrTranslation['Pers_telecom_fixed_phone'] 		= '';
+$arrTranslation['Pers_telecom_mobile_phone'] 		= '';
+$arrTranslation['Pers_first_email'] 				= '';
+$arrTranslation['Pers_skype'] 						= '';
+$arrTranslation['Pers_first_language'] 				= '';
+$arrTranslation['Pers_second_language'] 			= '';
+$arrTranslation['Pers_contact_preferred_mode'] 		= '';
+$arrTranslation['Pers_newsletter_agree'] 			= '';
+$arrTranslation['Pers_billing_first_name'] 			= '';
+$arrTranslation['Pers_billing_middle_name'] 		= '';
+$arrTranslation['Pers_billing_last_name'] 			= '';
+$arrTranslation['Pers_billing_telecom_fixed_phone'] = '';
+$arrTranslation['Pers_billing_telecom_mobile_phone']= '';
+$arrTranslation['Pers_billing_email'] 				= '';
+$arrTranslation['Pers_billing_vat_id'] 				= '';
+$arrTranslation['Pers_billing_fiscalcode'] 			= '';
+$arrTranslation['Pers_invoice_required'] 			= '';
+$arrTranslation['Company_type'] 					= '';
+$arrTranslation['Company_name'] 					= '';
+$arrTranslation['Company_registration_number'] 		= '';
+$arrTranslation['Company_website'] 					= '';
+$arrTranslation['Comp_postal_street_line_1'] 		= '';
+$arrTranslation['Comp_postal_street_line_2'] 		= '';
+$arrTranslation['Comp_postal_street_line_3'] 		= '';
+$arrTranslation['Comp_postal_city'] 				= '';
+$arrTranslation['Comp_postal_postalcode'] 			= '';
+$arrTranslation['Comp_postal_stateprov'] 			= '';
+$arrTranslation['Comp_postal_countrycode'] 			= '';
+$arrTranslation['Comp_contact_title'] 				= '';
+$arrTranslation['Comp_contact_first_name'] 			= '';
+$arrTranslation['Comp_contact_middle_name'] 		= '';
+$arrTranslation['Comp_contact_last_name'] 			= '';
+$arrTranslation['Comp_contact_qualification'] 		= '';
+$arrTranslation['Comp_contact_department'] 			= '';
+$arrTranslation['Comp_contact_telecom_fixed_phone'] = '';
+$arrTranslation['Comp_contact_telecom_fax'] 		= '';
+$arrTranslation['Comp_contact_telecom_mobile_phone']= '';
+$arrTranslation['Comp_contact_email'] 				= '';
+$arrTranslation['Comp_contact_skype'] 				= '';
+$arrTranslation['Comp_contact_language'] 			= '';
+$arrTranslation['Comp_contact_second_language'] 	= '';
+$arrTranslation['Comp_contact_preferred_mode'] 		= '';
+$arrTranslation['Comp_contact_newsletter_agree'] 	= '';
+$arrTranslation['Comp_billing_first_name'] 			= '';
+$arrTranslation['Comp_billing_middle_name'] 		= '';
+$arrTranslation['Comp_billing_last_name'] 			= '';
+$arrTranslation['Comp_billing_telecom_phone_number']= '';
+$arrTranslation['Comp_billing_email'] 				= '';
+$arrTranslation['Comp_billing_vat_id'] 				= '';
+$arrTranslation['Comp_billing_fiscalcode'] 			= '';
+$arrTranslation['Ecom_payment_card_name'] 			= '';
+$arrTranslation['Ecom_payment_card_type'] 			= '';
+$arrTranslation['Ecom_payment_card_number'] 		= '';
+$arrTranslation['Ecom_payment_card_expdate_month'] 	= '';
+$arrTranslation['Ecom_payment_card_expdate_year'] 	= '';
+$arrTranslation['Ecom_payment_card_verification'] 	= '';
+$arrTranslation['Ecom_payment_card_visa_verified'] 	= '';
+$arrTranslation['Ecom_payment_mode'] 				= '';
+$arrTranslation['Ecom_shipto_postal_name_prefix'] 	= '';
+$arrTranslation['Ecom_shipto_postal_company_name'] 	= ''; // business
+$arrTranslation['Ecom_shipto_post_office_box'] 		= ''; // business
+$arrTranslation['Ecom_shipto_postal_name_first'] 	= '';
+$arrTranslation['Ecom_shipto_postal_name_middle'] 	= '';
+$arrTranslation['Ecom_shipto_postal_name_last'] 	= '';
+$arrTranslation['Ecom_shipto_postal_street_line1'] 	= '';
+$arrTranslation['Ecom_shipto_postal_street_line2'] 	= '';
+$arrTranslation['Ecom_shipto_postal_street_line3'] 	= '';
+$arrTranslation['Ecom_shipto_postal_floor'] 		= '';
+$arrTranslation['Ecom_shipto_postal_city'] 			= '';
+$arrTranslation['Ecom_shipto_postal_postalcode'] 	= '';
+$arrTranslation['Ecom_shipto_postal_stateprov'] 	= '';
+$arrTranslation['Ecom_shipto_postal_countrycode'] 	= '';
+$arrTranslation['Ecom_shipto_contact_phone'] 		= '';
+$arrTranslation['Ecom_shipto_phone_number_for_shipper'] = ''; // business
+$arrTranslation['Ecom_shipto_note'] 				= '';
+$arrTranslation['Ident_name_prefix'] 				= '';
+$arrTranslation['Ident_name_first'] 				= '';
+$arrTranslation['Ident_name_last'] 					= '';
+$arrTranslation['Ident_birthdate'] 					= '';
+$arrTranslation['Ident_gender'] 					= '';
+$arrTranslation['Ident_country_of_birth'] 			= '';
+$arrTranslation['Ident_country_of_citizenship'] 	= '';
+$arrTranslation['Ident_country_where_you_live'] 	= '';
+$arrTranslation['Ident_passport_number'] 			= '';
+$arrTranslation['Ident_passport_issuing_country'] 	= '';
+$arrTranslation['Ident_passport_issuance'] 			= '';
+$arrTranslation['Ident_passport_expiration'] 		= '';
+$arrTranslation['Ident_identity_card_number'] 		= '';
+$arrTranslation['Ident_identity_card_issued_by'] 	= '';
+$arrTranslation['Ident_identity_card_issuance'] 	= '';
+$arrTranslation['Ident_identity_card_expiration'] 	= '';
+$arrTranslation['Ident_driver_license_number'] 		= '';
+$arrTranslation['Ident_driver_license_issued_by'] 	= '';
+$arrTranslation['Ident_driver_license_issuance'] 	= '';
+$arrTranslation['Ident_driver_license_expiration'] 	= '';
+
+	
+	
+
+	
+	
+	foreach ($arrTranslation as $old => $new) {
+		if ((trim($new)) <> ''){
+			if ((trim($data[$old])) <> ''){		// fix 2014-12-23
+			$data[$new] = $data[$old];
+			unset($data[$old]); // not really required
+			}
+		}
+	}
+    
+    
+    
+    
     print json_encode($data); // redirect to
     
     
