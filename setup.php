@@ -5,16 +5,18 @@ define("SETUP_CONFIG",'20150418');
 
 
 if (php_sapi_name() == "cli") {
-    // In cli-mode
     
-    fwrite(STDOUT, PHP_EOL."\033[32mWelcome to SingleID web-plugin setup!".PHP_EOL);
-    fwrite(STDOUT, "\033[0m____________________________________________________".PHP_EOL.PHP_EOL);
+    fwrite(STDOUT, PHP_EOL."\033[32mWelcome to SingleID web-plugin setup!
+\033[0m____________________________________________________".PHP_EOL.PHP_EOL);
     
 } else {
 	
-    die('<h1>you can launch this php only from command line</h1>');
+    die('<h1>Sorry. Exec this php from command line.</h1>');
     
 }
+
+
+
 
 
 
@@ -22,13 +24,13 @@ if (php_sapi_name() == "cli") {
 if (file_exists( __DIR__ . '/personal.conf.php')) {
 	
 	
-	fwrite(STDERR, PHP_EOL."\033[31m Configuration File already founded!".PHP_EOL." Do you want to delete it? (y/n) \033[0m".PHP_EOL);
+	fwrite(STDOUT, PHP_EOL."\033[31m Configuration File already founded!".PHP_EOL." Do you want to delete it? (y/n) \033[0m".PHP_EOL);
 	$answer 	= fgets(STDIN);
 	
 	
 	// TODO check for release version of the founded file!
 	
-	if ($answer == 'y'){
+	if ($answer[0] == 'y'){
 		
 		unlink(__DIR__ . '/personal.conf.php');
 		fwrite(STDOUT, PHP_EOL."Previous configuration file deleted succesfully.".PHP_EOL);
@@ -40,7 +42,7 @@ if (file_exists( __DIR__ . '/personal.conf.php')) {
 	
 	}
 	
-} else {
+}
 	
 
 
@@ -111,36 +113,51 @@ define("LANGUAGE",'en');
 
 */
 
-/*
-$name = trim(shell_exec("read -p 'Enter your name: ' name\necho \$name"));
-echo "Hello $name this is PHP speaking\n";
-exit;
-*/
+
 retry_name:
-fwrite(STDERR, "Enter Short Site Name:".PHP_EOL);
-$sitename 	= fgets(STDIN);
+fwrite(STDOUT, "Enter Short Site Name:".PHP_EOL);
+$sitename 	= substr(fgets(STDIN),0,-1);
 
 if (trim($sitename) == ''){
 	goto retry_name;
 }
 
-$create_new  	= str_replace('basic install', substr($sitename,0,-1), $create_new);
+$create_new  	= str_replace('basic install', $sitename, $create_new);
 
+fwrite(STDOUT, "Enter LOGO URL
+\033[31mRemember:
 
+\033[0m1) NO HTTPS
+2) PNG only
+3) On the same domain of your website
+4) No more than 40kb!
+5) Resource must be accessible from internet
+
+example ( www.singleid.com/img/logonew.png )
+".PHP_EOL);
 
 retry_url:
-fwrite(STDOUT, "Enter logo URL".PHP_EOL);
-fwrite(STDOUT, "\033[31mRemember:".PHP_EOL);
-fwrite(STDOUT, "\033[0m 1) NO HTTPS".PHP_EOL);
-fwrite(STDOUT, "2) PNG only".PHP_EOL);
-fwrite(STDERR, "3) On the same domain of your website".PHP_EOL);
-$logourl 		= fgets(STDIN);
+
+fwrite(STDOUT, "http://");
+
+
+$logourl 		= "http://".substr(fgets(STDIN),0,-1);
 
 if (trim($logourl) == ''){
+	fwrite(STDOUT, "\033[31mNO URL INSERTED!".PHP_EOL."\033[0m");
 	goto retry_url;
+}else{
+	
+	if (filter_var($logourl, FILTER_VALIDATE_URL)){ 
+	  // seems ok
+	}else{
+		fwrite(STDOUT, "\033[31mWRONG URL INSERTED!".PHP_EOL."\033[0m");
+
+		goto retry_url;
+	}
 }
 
-$create_new  	= str_replace('http://www.singleid.com/img/logonew.png', substr($logourl,0,-1), $create_new);
+$create_new  	= str_replace('http://www.singleid.com/img/logonew.png', $logourl, $create_new);
 
 
 
@@ -149,11 +166,14 @@ $fp           	= fopen( 'personal.conf.php', 'w'); 	// configuration file has be
 fwrite($fp, $create_new);
 fclose($fp);
 
-}
 
 
 
-
+/*
+// TODO check if the file has the right IDs into the form
+$inputgrep = file_get_contents('../index.html');
+die(strip_tags($inputgrep,'<input>'));
+*/
 
 
 if (!file_exists( 'personal.auth.php')) {
@@ -165,7 +185,26 @@ fwrite($fpp, $create_new);
 fclose($fpp);
 
 }
-    fwrite(STDOUT,  PHP_EOL."\033[32mConfiguration done!".PHP_EOL);
+    fwrite(STDOUT,  PHP_EOL."\033[32mConfiguration done!
+\033[0m____________________________________________________".PHP_EOL.PHP_EOL);
+    
+    
+    fwrite(STDOUT,  PHP_EOL."\033[0m
+You must have jQuery on the page that embed this script.
+You can install jQuery by adding these line inside the head section
+
+\033[1m<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js\"></script>\033[0m
+
+Finally insert the SingleID Button. 
+Place this line of code where you want button:
+
+\033[1m<iframe src=\"web-plugin/SingleID.php?op=init\" width=\"220\" height=\"80\" frameborder=\"0\"></iframe>\033[0m".PHP_EOL);
+
+
+
+
+
+
     fwrite(STDOUT, "\033[0m".PHP_EOL.PHP_EOL);
 
 ?>

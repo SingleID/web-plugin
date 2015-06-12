@@ -402,7 +402,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
 	
 	} else {
 	
-		$fake_random_pwd = substr(md5( microtime().rand(10,99999999).$_SERVER['REMOTE_ADDR'] ),rand(1,15),16);
+		$fake_random_pwd = substr(md5( microtime().rand(1000000,99999999).$_SERVER['REMOTE_ADDR'] ),rand(1,15),16);
 	
 	}
 	
