@@ -29,8 +29,9 @@ Possible values for requested_data
  
 
 define("LOGO_URL", 'http://www.singleid.com/img/logonew.png');	// must not be on HTTPS!
-define("SITE_NAME", 'basic install');
-define("requested_data", '1');
+																// setup.php will change this for you. Trust me.
+define("SITE_NAME", 'basic install');							// setup.php will change this for you. Trust me.
+define("requested_data", '1');									// setup.php will change this for you. Trust me.
 define("admin_contact", ''); 		// You have to set this field only if requested_data is different from "1"
 define("STORAGE",'file');			// use files for temporary storage ( memcache or mysql will be included soon )
 define("ACCEPT",'both');			// which profile we accept (allowed value are personal, business, both )
@@ -63,9 +64,9 @@ $TABLE_LOG  	= 'SingleID_log';
 
 
 // YOU SHOULD NOT CHANGE THE VALUES BELOW 
-$PWD_TEMP_FILES = hash('sha256', ' automatic setup should set random value at my right -> CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!'); 
+$PWD_TEMP_FILES = 'CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!'; // setup.php will change this for you. Trust me.
 
-define("PATH",'userdata/');				// automatic setup should create a random folder with a random name of course
+define("PATH",'userdata/');				// setup.php will change this for you. Trust me.
 
 define("CONFIG_VERSION",'20150418'); 	// ABSOLUTELY DO NOT CHANGE THIS. It's used to help you to know when a git pull requires you to do some work.
 

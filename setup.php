@@ -2,70 +2,139 @@
 
 define("SETUP_CONFIG",'20150418');
 
+// unlink(__DIR__ . '/personal.conf.php'); // ONLY FOR DEBUGGING!!!!!
 
 
 
-if (!file_exists( '/personal.conf.php')) {
+if (php_sapi_name() == "cli") {
+    // In cli-mode
+    
+    fwrite(STDOUT, PHP_EOL."\033[32mWelcome to SingleID web-plugin setup!".PHP_EOL);
+    fwrite(STDOUT, "\033[0m____________________________________________________".PHP_EOL.PHP_EOL);
+    
+} else {
 	
+    die('<h1>you can launch this php only from command line</h1>');
+    
+}
+
+
+
+
+if (file_exists( '/personal.conf.php')) {
+	
+	
+	
+	fwrite(STDOUT, "personal.conf.php already done!".PHP_EOL."Quit.".PHP_EOL);
+	die();
+	
+	// TODO for info release!
+	
+} else {
+	
+
+
+
 $create_new = file_get_contents('lib/official.examples/SingleID.conf.php');
     			
 // create random value for PATH value
 $Bytes 			= openssl_random_pseudo_bytes(8, $strong);
-$rndval 		= bin2hex($Bytes);
+$rndval 		= 'userdata_'.bin2hex($Bytes);
 $create_new  	= str_replace('userdata/', $rndval.'/', $create_new);
 
 if (!is_dir($rndval)) {
-    mkdir($rndval, 0777, true);
-    error_log('Created folder for temp data');
+    mkdir( $rndval, 0777, true);   
+    //fwrite(STDOUT, "Created folder for temp data with this name $rndval/ ".PHP_EOL);
 }
 
 
 
-// this step is for extra security. If you really know what are you doing you can remove
-// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
-if (!file_exists(__DIR__ . '/' . $rndval . '/index.html')) {
-	$securitydata = '<html><h1>Silence is gold</h1></html>';  	// absolutely prevent directory browsing!
-	$fp           = fopen($rndval . '/index.html', 'w');
-	fwrite($fp, $securitydata);
+	// this step is for extra security. If you really know what are you doing you can remove
+	// just to be extra sure that nobody could browse this folder that for some minutes could be full of sensitive data
+	if (!file_exists(__DIR__ . '/' . $rndval . '/index.html')) {
+		$securitydata = '<html><h1>Silence is gold</h1></html>';  	// absolutely prevent directory browsing!
+		$fp           = fopen($rndval . '/index.html', 'w');
+		fwrite($fp, $securitydata);
+		fclose($fp);
+		//fwrite(STDOUT, "Created fake index.html".PHP_EOL);
+	}
+
+	if (!file_exists(__DIR__ . '/' . $rndval . '/.htaccess')) {
+		$securitydata = 'Options -Indexes';  						// absolutely prevent directory browsing!
+		$fp           = fopen($rndval . '/.htaccess', 'w');
+		fwrite($fp, $securitydata);
+		fclose($fp);
+		//fwrite(STDOUT, "Created fake .htaccess".PHP_EOL);
+	}
+
+
+	if (!file_exists(__DIR__ . '/' .$rndval . '/garbage.txt')) {
+		
+	$garbagedata = bin2hex(openssl_random_pseudo_bytes(1024));
+
+	// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... 
+	// it depends from OS, FS and storage type used but... why not?
+	$fp           = fopen($rndval . '/garbage.txt', 'w');
+	fwrite($fp, base64_encode($garbagedata));
 	fclose($fp);
-	error_log('Created fake index.html');
-}
-
-if (!file_exists(__DIR__ . '/' . $rndval . '/.htaccess')) {
-	$securitydata = 'Options -Indexes';  						// absolutely prevent directory browsing!
-	$fp           = fopen($rndval . '/.htaccess', 'w');
-	fwrite($fp, $securitydata);
-	fclose($fp);
-	error_log('Created fake .htaccess');
-}
-
-if (!file_exists(__DIR__ . '/' .$rndval . '/garbage.txt')) {
-$garbagedata = '
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quaesita enim virtus est, non quae relinqueret naturam, sed quae tueretur. Quare attende, quaeso. Ergo ita: non posse honeste vivi, nisi honeste vivatur? Itaque hic ipse iam pridem est reiectus;
-
-Audax negotium, dicerem impudens, nisi hoc institutum postea translatum ad philosophos nostros esset. Duo Reges: constructio interrete. Facillimum id quidem est, inquam. At enim, qua in vita est aliquid mali, ea beata esse non potest. Atque ab his initiis profecti omnium virtutum et originem et progressionem persecuti sunt. Quamquam ab iis philosophiam et omnes ingenuas disciplinas habemus; Sed plane dicit quod intellegit. Illa argumenta propria videamus, cur omnia sint paria peccata.
-
-Immo videri fortasse. Philosophi autem in suis lectulis plerumque moriuntur. Qui autem esse poteris, nisi te amor ipse ceperit? Si mala non sunt, iacet omnis ratio Peripateticorum.
-
-Habent enim et bene longam et satis litigiosam disputationem. Etenim semper illud extra est, quod arte comprehenditur. Prioris generis est docilitas, memoria; Hoc loco tenere se Triarius non potuit. Non est igitur voluptas bonum. Beatus sibi videtur esse moriens. Vitae autem degendae ratio maxime quidem illis placuit quieta.
-
-Huius, Lyco, oratione locuples, rebus ipsis ielunior. Quid ergo aliud intellegetur nisi uti ne quae pars naturae neglegatur? Quarum ambarum rerum cum medicinam pollicetur, luxuriae licentiam pollicetur. Nemo igitur esse beatus potest. Quid ergo attinet gloriose loqui, nisi constanter loquare? Quod iam a me expectare noli.
-';
-
-
-// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... it depends from OS and FS used
-$fp           = fopen($rndval . '/garbage.txt', 'w');
-fwrite($fp, base64_encode(uniqid().$garbagedata));
-fclose($fp);
-			
-}	
+				
+	}	
 
 
 
 // create random value for PATH value
 $Bytes 			= openssl_random_pseudo_bytes(32, $strong);
 $rndval 		= bin2hex($Bytes);
-$create_new  	= str_replace('RANDOM_(FIXED)_CHARS AT SETUP!', $rndval, $create_new);
+$create_new  	= str_replace('CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!', $rndval, $create_new);
+
+// params that should be entered during setup!
+
+/*
+type of data that you want to require
+* 
+* 
+define("LOGO_URL", 'http://www.img-bahn.de/es/v1504/img/logo-db-bahn.png');	// must not be on HTTPS!
+define("SITE_NAME", 'DB Bahn');
+define("requested_data", '1,2,3');
+define("admin_contact", ''); 		// You have to set this field only if requested_data is different from "1"
+define("STORAGE",'file');			// use files for temporary storage ( memcache or mysql will be included soon )
+define("ACCEPT",'both');			// which profile we accept (allowed value are personal, business, both )
+define("LANGUAGE",'en');
+
+*/
+
+/*
+$name = trim(shell_exec("read -p 'Enter your name: ' name\necho \$name"));
+echo "Hello $name this is PHP speaking\n";
+exit;
+*/
+retry_name:
+fwrite(STDERR, "Enter Short Site Name:".PHP_EOL);
+$sitename 	= fgets(STDIN);
+
+if (trim($sitename) == ''){
+	goto retry_name;
+}
+
+$create_new  	= str_replace('basic install', substr($sitename,0,-1), $create_new);
+
+
+
+retry_url:
+fwrite(STDOUT, "Enter logo URL".PHP_EOL);
+fwrite(STDOUT, "\033[31mRemember:".PHP_EOL);
+fwrite(STDOUT, "\033[0m 1) NO HTTPS".PHP_EOL);
+fwrite(STDOUT, "2) PNG only".PHP_EOL);
+fwrite(STDERR, "3) On the same domain of your website".PHP_EOL);
+$logourl 		= fgets(STDIN);
+
+if (trim($logourl) == ''){
+	goto retry_url;
+}
+
+$create_new  	= str_replace('http://www.singleid.com/img/logonew.png', substr($logourl,0,-1), $create_new);
+
+
 
 
 $fp           	= fopen( 'personal.conf.php', 'w'); 	// configuration file has been written with some random value. Good job bro'
@@ -81,13 +150,14 @@ fclose($fp);
 
 if (!file_exists( 'personal.auth.php')) {
 	
-$create_new = file_get_contents( __DIR__ . '/lib/official.examples/SingleID.auth.php');
+$create_new 	= file_get_contents( __DIR__ . '/lib/official.examples/SingleID.auth.php');
     
 $fpp           	= fopen('personal.auth.php', 'w');
 fwrite($fpp, $create_new);
 fclose($fpp);
 
 }
+    fwrite(STDOUT,  PHP_EOL."\033[32mConfiguration done!".PHP_EOL);
+    fwrite(STDOUT, "\033[0m".PHP_EOL.PHP_EOL);
 
-// unlink(__FILE__);
 ?>
