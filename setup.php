@@ -2,8 +2,6 @@
 
 define("SETUP_CONFIG",'20150418');
 
-// unlink(__DIR__ . '/personal.conf.php'); // ONLY FOR DEBUGGING!!!!!
-
 
 
 if (php_sapi_name() == "cli") {
@@ -21,14 +19,26 @@ if (php_sapi_name() == "cli") {
 
 
 
-if (file_exists( '/personal.conf.php')) {
+if (file_exists( __DIR__ . '/personal.conf.php')) {
 	
 	
+	fwrite(STDERR, PHP_EOL."\033[31m Configuration File already founded!".PHP_EOL." Do you want to delete it? (y/n) \033[0m".PHP_EOL);
+	$answer 	= fgets(STDIN);
 	
-	fwrite(STDOUT, "personal.conf.php already done!".PHP_EOL."Quit.".PHP_EOL);
-	die();
 	
-	// TODO for info release!
+	// TODO check for release version of the founded file!
+	
+	if ($answer == 'y'){
+		
+		unlink(__DIR__ . '/personal.conf.php');
+		fwrite(STDOUT, PHP_EOL."Previous configuration file deleted succesfully.".PHP_EOL);
+		
+	}else{
+
+		fwrite(STDOUT, PHP_EOL."Configuration file not modified! Bye".PHP_EOL);
+		die();
+	
+	}
 	
 } else {
 	
@@ -42,10 +52,9 @@ $Bytes 			= openssl_random_pseudo_bytes(8, $strong);
 $rndval 		= 'userdata_'.bin2hex($Bytes);
 $create_new  	= str_replace('userdata/', $rndval.'/', $create_new);
 
-if (!is_dir($rndval)) {
-    mkdir( $rndval, 0777, true);   
-    //fwrite(STDOUT, "Created folder for temp data with this name $rndval/ ".PHP_EOL);
-}
+	if (!is_dir($rndval)) {
+		mkdir( $rndval, 0777, true);   
+	}
 
 
 
@@ -56,7 +65,6 @@ if (!is_dir($rndval)) {
 		$fp           = fopen($rndval . '/index.html', 'w');
 		fwrite($fp, $securitydata);
 		fclose($fp);
-		//fwrite(STDOUT, "Created fake index.html".PHP_EOL);
 	}
 
 	if (!file_exists(__DIR__ . '/' . $rndval . '/.htaccess')) {
@@ -64,19 +72,19 @@ if (!is_dir($rndval)) {
 		$fp           = fopen($rndval . '/.htaccess', 'w');
 		fwrite($fp, $securitydata);
 		fclose($fp);
-		//fwrite(STDOUT, "Created fake .htaccess".PHP_EOL);
 	}
 
 
 	if (!file_exists(__DIR__ . '/' .$rndval . '/garbage.txt')) {
 		
-	$garbagedata = bin2hex(openssl_random_pseudo_bytes(1024));
+		$garbagedata = bin2hex(openssl_random_pseudo_bytes(1024));
 
-	// when we need to rewrite a file... we try to overwrite it with garbage before delete it. could be useless.... 
-	// it depends from OS, FS and storage type used but... why not?
-	$fp           = fopen($rndval . '/garbage.txt', 'w');
-	fwrite($fp, base64_encode($garbagedata));
-	fclose($fp);
+		// We try to overwrite the file with garbage before deleting it. 
+		// could be useless because it depends from OS, FS and storage type used but... why not?
+		
+		$fp           = fopen($rndval . '/garbage.txt', 'w');
+		fwrite($fp, base64_encode($garbagedata));
+		fclose($fp);
 				
 	}	
 
