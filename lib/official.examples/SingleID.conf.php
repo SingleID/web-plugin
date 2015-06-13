@@ -36,6 +36,7 @@ define("admin_contact", ''); 		// You have to set this field only if requested_d
 define("STORAGE",'file');			// use files for temporary storage ( memcache or mysql will be included soon )
 define("ACCEPT",'both');			// which profile we accept (allowed value are personal, business, both )
 define("LANGUAGE",'en');
+define("PHPEXEC",'0'); 				// 0 = only Javascript autofill | 1 = exec the php code personal.auth.php 
 
 // Mysql section (if needed) (2FA?)
 $HOST 			= 'localhost';
@@ -68,6 +69,6 @@ $PWD_TEMP_FILES = 'CHANGE_THIS_WITH_RANDOM_(FIXED)_CHARS AT SETUP!'; // setup.ph
 
 define("PATH",'userdata/');				// setup.php will change this for you. Trust me.
 
-define("CONFIG_VERSION",'20150418'); 	// ABSOLUTELY DO NOT CHANGE THIS. It's used to help you to know when a git pull requires you to do some work.
+define("CONFIG_VERSION",'20150612'); 	// ABSOLUTELY DO NOT CHANGE THIS. It's used to help you to know when a git pull requires you to do some work.
 
 ?>
