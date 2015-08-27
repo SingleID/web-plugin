@@ -188,8 +188,9 @@ function print_login_button($language = 'en', $requested_data) {
 <!DOCTYPE html>
 <html>
     <head>
-        <title>SingleID iframed button</title>
+	<title>SingleID: First-class login</title>
         <meta charset="utf-8">
+        <meta name="robots" content="none" />
         <link rel="stylesheet" href="css/SingleID/SingleID.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>                
         <script src="js/plugin.js"></script>
