@@ -224,7 +224,7 @@ function print_login_button($language = 'en', $requested_data) {
                   $(".icon_box_go").show(\'fast\');
                   $(".singleid_styled_input").focus();
 
-                  $(".singleid_styled_input").keypress(function(event) {
+                  $(".singleid_styled_input").keyup(function(event) {
                       if (event.keyCode == 13) {
                           sid_sendData();
                       }
