@@ -158,11 +158,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         'ACTION_ID' => 'askfordata'
     );
     
-    //url-ify the data for the POST
-    foreach ($fields as $key => $value) { // TODO and if a var contain a & ? DOUBLE CHECK HERE ASAP
-        $fields_string .= $key . '=' . $value . '&'; // TODO TO CHECK 
-    }
-    rtrim($fields_string, '&');
+	$fields_string = http_build_query($fields);
     
     
     $ServerReply = send_request_to_singleid_server($fields, $fields_string);
