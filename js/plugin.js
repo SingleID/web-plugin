@@ -88,6 +88,21 @@ function sid_populateData()
 		
 		jQuery.each( obj, function( key, value ) {
 			
+			// SingleID 1.2 support also binary image
+			if (key == 'Ident_passport_thumbnail'){
+				window.parent.document.getElementById(key).src = value;
+				window.parent.document.getElementById(key).style.display = 'block';
+			}
+			if (key == 'Ident_identity_card_thumbnail'){
+				window.parent.document.getElementById(key).src = value;
+				window.parent.document.getElementById(key).style.display = 'block';
+			}
+			if (key == 'Ident_driver_license_thumbnail'){
+				window.parent.document.getElementById(key).src = value;
+				window.parent.document.getElementById(key).style.display = 'block';
+			}
+			
+			
 				
 				var input_type = parent.window.jQuery('#'+key).attr('type');
 				
