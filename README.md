@@ -13,7 +13,7 @@ It provides a dramatically better user experience and at the same time a higher 
 #### Latest revision of this Doc
 
 Status: Draft
-Latest update: 2015-03-10
+Latest update: 2016-05-11
 
 ---
 
@@ -37,6 +37,7 @@ exec this on your server:
 The page that include the iframe must have jquery
 If you don't use jquery on that page you have to add with this line of code:
 
+#### Please double check that you do not add jquery twice!
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 
@@ -114,7 +115,7 @@ example
 
 You are free to ask the set "1" with or without https.
 	
-In order to ask for the other set you MUST USE SSL for both form.php and plugin.php
+In order to retrieve any other set you MUST USE SSL for both form.php and plugin.php
 
 
 ---
@@ -128,10 +129,10 @@ A login request should appear in this way
 billing_key
 
 :	You are free to ask the set "1" with or without this field filled.
-	In order to ask for the other set you MUST type in this field the billing_key.
+	In order to ask any other set you MUST type in this field the billing_key.
 	You can obtain a billing key on the website www.singleid.com 
 
-The billing key is a secret value and had to keep hidden
+The billing key is a secret value and had to keep hidden from browsers
  
 admin contact
 : 	Is an optional field. If isset we will sent to this email address an alert if something goes wrong between the plugin and our server.
