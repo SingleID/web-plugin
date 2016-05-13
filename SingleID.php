@@ -225,7 +225,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
     
 } elseif (isset($_POST['UTID'])) { // *MUST BE* after gimmedetails
     
-    // an app has sent something
+    // an app has sent a response!
     
     $_POST = array_map("strip_tags", $_POST);
     
@@ -344,6 +344,7 @@ if ($_REQUEST['op'] == 'init') { // Where all begin ( display the green button )
         // a device has sent the data to the iframe so we can do a lot of thing
         // the flow should be the following
         // if you want to hack this system read this carefully :-P
+        // be sure to have a mysqlDB or you need to delete some rows below
         
         if (!is_SingleID($_SESSION['SingleID']['who'])) {
             die('Internal miscofinguration :: ' . $_SESSION['SingleID']['who']);
